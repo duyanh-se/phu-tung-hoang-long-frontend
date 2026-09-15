@@ -1,0 +1,241 @@
+"use client";
+
+import { useRef } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
+import { motionPresets, motionQueries } from "@/styles/motion";
+import { typographyVariants } from "@/styles/typography";
+import { Container } from "@/components/layout/container";
+import { Typography, Paragraph } from "@/components/ui/typography";
+import { ActionLink } from "@/components/ui/action-link";
+import { MotionText } from "@/components/motion/motion-text";
+import { landingContent } from "@/config/landing";
+
+const ranges = [
+  { label: "MAXSPEED", detail: "Dầu nhớt xe số" },
+  { label: "SUPERIOR", detail: "Dầu nhớt xe tay ga" },
+  { label: "SCOOTER GEAR OIL", detail: "Dầu nhớt hộp số tay ga" },
+];
+
+export function DenisSpotlight() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const media = gsap.matchMedia();
+      media.add(
+        {
+          all: "(min-width: 0px)",
+          reduced: motionQueries.reduced,
+          desktop: motionQueries.stack,
+        },
+        (context) => {
+          if (context.conditions?.reduced) return;
+
+          gsap.from("[data-denis-reveal]", {
+            opacity: 0,
+            y: context.conditions?.desktop
+              ? motionPresets.reveal.distance
+              : motionPresets.mobileDistance,
+            duration: context.conditions?.desktop
+              ? motionPresets.reveal.duration
+              : motionPresets.reveal.mobileDuration,
+            stagger: motionPresets.reveal.stagger,
+            ease: motionPresets.ease,
+            clearProps: "opacity,transform",
+            scrollTrigger: {
+              trigger: "[data-denis-content]",
+              start: "top 80%",
+              once: true,
+            },
+          });
+          gsap.from("[data-denis-rule]", {
+            scaleX: 0,
+            transformOrigin: "left",
+            duration: motionPresets.reveal.duration,
+            ease: motionPresets.ease,
+            scrollTrigger: {
+              trigger: "[data-denis-content]",
+              start: "top 80%",
+              once: true,
+            },
+          });
+          gsap.from("[data-denis-range]", {
+            x: (index) => (index % 2 ? 20 : -20),
+            opacity: 0,
+            duration: motionPresets.reveal.duration,
+            stagger: motionPresets.reveal.stagger,
+            ease: motionPresets.ease,
+            clearProps: "opacity,transform",
+            scrollTrigger: {
+              trigger: "[data-denis-ranges]",
+              start: "top 86%",
+              once: true,
+            },
+          });
+
+          if (context.conditions?.desktop) {
+            ref.current?.classList.add("denis-enhanced");
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: "[data-denis-bridge]",
+                  start: "top top",
+                  end: () => "+=" + window.innerHeight * 1.3,
+                  scrub: motionPresets.scrub.denis,
+                  invalidateOnRefresh: true,
+                },
+              })
+              .fromTo(
+                "[data-denis-bridge-title] [data-motion-line]",
+                { scale: 0.76, y: 36 },
+                { scale: 1.12, y: -24, ease: "none" },
+                0,
+              )
+              .fromTo(
+                "[data-denis-bridge-copy]",
+                { opacity: 0, y: 24 },
+                { opacity: 1, y: 0, ease: "none" },
+                0.15,
+              )
+              .to(
+                "[data-denis-bridge-copy]",
+                { opacity: 0, y: -24, ease: "none" },
+                0.52,
+              )
+              .fromTo(
+                "[data-denis-panel]",
+                { yPercent: 100 },
+                { yPercent: 0, ease: "none" },
+                0.52,
+              )
+              .to(
+                "[data-denis-bridge-title]",
+                { opacity: 0, ease: "none" },
+                0.62,
+              );
+            gsap.fromTo(
+              "[data-denis-art]",
+              { x: motionPresets.spotlightParallax },
+              {
+                x: -motionPresets.spotlightParallax,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: ref.current,
+                  start: "top bottom",
+                  end: "bottom top",
+                  scrub: motionPresets.scrub.denis,
+                },
+              },
+            );
+          } else {
+            gsap.from("[data-denis-bridge-title] [data-motion-line]", {
+              yPercent: 110,
+              duration: motionPresets.hero.mobileDuration,
+              ease: motionPresets.ease,
+              clearProps: "transform",
+              scrollTrigger: {
+                trigger: "[data-denis-bridge]",
+                start: "top 85%",
+                once: true,
+              },
+            });
+          }
+          return () => ref.current?.classList.remove("denis-enhanced");
+        },
+      );
+      return () => media.revert();
+    },
+    { scope: ref },
+  );
+
+  return (
+    <section
+      id="denis"
+      ref={ref}
+      data-stack-scene
+      className="denis-spotlight relative isolate bg-foreground text-surface"
+      aria-labelledby="denis-title"
+    >
+      <div
+        data-denis-art
+        className="denis-art pointer-events-none absolute inset-0 -z-10"
+        aria-hidden="true"
+      />
+      <div data-denis-bridge className="denis-bridge">
+        <div className="denis-bridge-pin">
+          <Container className="denis-bridge-content">
+            <MotionText
+              id="denis-title"
+              as="h2"
+              lines={["DENIS."]}
+              data-denis-bridge-title
+              className={typographyVariants.display}
+              lineClassName="overflow-visible"
+            />
+            <Typography
+              data-denis-bridge-copy
+              variant="subtitle"
+              className="max-w-sm text-inverse-muted"
+            >
+              Một cái tên.
+              <br />
+              Nhiều lựa chọn để khám phá.
+            </Typography>
+          </Container>
+          <Container
+            data-denis-content
+            data-denis-panel
+            className="denis-content"
+          >
+            <div className="grid gap-12 py-12 lg:grid-cols-2 lg:gap-16 lg:py-16">
+              <div className="space-y-8">
+                <div
+                  data-denis-rule
+                  className="h-1 w-24 bg-brand-600"
+                  aria-hidden="true"
+                />
+                <Typography data-denis-reveal variant="subtitle">
+                  Những dòng dầu nhớt
+                  <br />
+                  đang có tại Hoàng Long.
+                </Typography>
+              </div>
+              <div className="space-y-8 lg:pt-4">
+                <Paragraph
+                  data-denis-reveal
+                  className="max-w-lg text-inverse-muted"
+                >
+                  Tìm hiểu các dòng dầu nhớt DENIS đang có tại cửa hàng:
+                  MAXSPEED, SUPERIOR và Scooter Gear Oil.
+                </Paragraph>
+                <div
+                  data-denis-ranges
+                  className="divide-y divide-inverse border-y border-inverse"
+                >
+                  {ranges.map((range) => (
+                    <div data-denis-range key={range.label} className="py-5">
+                      <div className="space-y-1">
+                        <Typography variant="cardTitle">
+                          {range.label}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          className="text-inverse-muted"
+                        >
+                          {range.detail}
+                        </Typography>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ActionLink data-denis-reveal href={landingContent.denisHref}>
+                  Xem sản phẩm DENIS
+                </ActionLink>
+              </div>
+            </div>
+          </Container>
+        </div>
+      </div>
+    </section>
+  );
+}
