@@ -4,6 +4,7 @@ export const motionPresets = {
   hero: { duration: 0.9, mobileDuration: 0.55, stagger: 0.08, distance: 28 },
   reveal: { duration: 0.7, mobileDuration: 0.45, stagger: 0.09, distance: 24 },
   micro: 0.22,
+  story: { exit: 0.4, enter: 0.7 },
   scrub: { hero: 0.8, story: 0.6, denis: 0.75, gallery: 0.85 },
   cardRotation: 1.25,
   mobileDistance: 12,

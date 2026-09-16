@@ -129,7 +129,7 @@ export function LandingHero() {
           <MotionText
             id="hero-title"
             as="h1"
-            lines={["Hoàng Long.", "Gần hơn với chiếc xe của bạn."]}
+            lines={["Hoàng Long.", "Trao giá trị nhận niềm tin"]}
             data-hero-title
             data-hero-line
             className={typographyVariants.display}
@@ -140,7 +140,7 @@ export function LandingHero() {
             data-hero-line
             className="flex flex-wrap gap-3 pt-2"
           >
-            <ActionLink href="#denis">Khám phá DENIS</ActionLink>
+            <ActionLink href="#denis">Khám phá Sản phẩm nổi bật</ActionLink>
             <ActionLink
               href="#cau-chuyen"
               variant="ghost"

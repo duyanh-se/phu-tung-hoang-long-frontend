@@ -116,9 +116,36 @@
         transparent 40%
       );
   }
+  .store-story-section {
+    overflow: clip;
+    background-color: color-mix(
+      in srgb,
+      var(--color-background) 82%,
+      var(--color-border)
+    );
+    background-image: linear-gradient(
+      90deg,
+      transparent 49.8%,
+      rgb(from var(--color-muted) r g b / 5%) 50%,
+      transparent 50.2%
+    );
+    background-size: 96px 96px;
+  }
   .story-copy {
     display: grid;
     gap: 4rem;
+  }
+  .story-heading {
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+  @media (orientation: portrait) and (max-width: 1023px) {
+    .store-story-section .story-heading {
+      display: grid;
+      min-height: min(28svh, 20rem);
+      place-items: center;
+      margin-bottom: clamp(1.5rem, 5svh, 3rem);
+      text-align: center;
+    }
   }
   .story-chapter {
     min-width: 0;
@@ -140,6 +167,33 @@
     position: relative;
     padding-block: clamp(4.5rem, 8vw, 8rem);
   }
+  .products-rail-viewport {
+    min-width: 0;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scroll-snap-type: x mandatory;
+  }
+  .products-rail {
+    width: max-content;
+    padding-bottom: 0.5rem;
+  }
+  .products-rail-items {
+    display: flex;
+    gap: 1rem;
+  }
+  .products-rail-items .product-card {
+    width: min(78vw, 20rem);
+    height: auto;
+    align-self: stretch;
+    scroll-snap-align: start;
+  }
+  .products-rail-items .product-card > p:last-child {
+    margin-top: auto;
+  }
+  .product-card-compact .product-card-code {
+    max-width: 9rem;
+  }
   .denis-art {
     opacity: 0.22;
     background: repeating-linear-gradient(
@@ -152,7 +206,26 @@
     );
     mask-image: linear-gradient(90deg, transparent, black);
   }
+  .denis-banner {
+    z-index: 0;
+    overflow: hidden;
+  }
+  .denis-banner-image {
+    opacity: 0.65;
+    object-position: 58% center;
+    will-change: transform;
+  }
+  .denis-banner-shade {
+    background: linear-gradient(
+      90deg,
+      rgb(from var(--color-foreground) r g b / 94%),
+      rgb(from var(--color-foreground) r g b / 76%) 58%,
+      rgb(from var(--color-foreground) r g b / 90%)
+    );
+  }
   .denis-bridge {
+    position: relative;
+    z-index: 1;
     padding-block: clamp(4.5rem, 8vw, 8rem);
   }
   .denis-spotlight {
@@ -175,6 +248,40 @@
   }
   .denis-content {
     padding-bottom: clamp(4.5rem, 8vw, 8rem);
+  }
+  .denis-media-gallery {
+    display: grid;
+    gap: 1rem;
+  }
+  .denis-feature-image {
+    background: var(--color-surface);
+  }
+  .denis-document-track {
+    position: relative;
+    z-index: 1;
+  }
+  .denis-document-stage,
+  .denis-document-driver {
+    display: none;
+  }
+  .denis-document-mobile {
+    display: grid;
+    position: relative;
+    z-index: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding-top: clamp(3rem, 8vw, 8rem);
+    padding-bottom: clamp(5rem, 10vw, 10rem);
+  }
+  .denis-document-link {
+    display: grid;
+    gap: 0.5rem;
+    color: var(--color-surface);
+  }
+  .denis-document-label {
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-caption);
   }
   .product-card {
     transition:
@@ -306,19 +413,43 @@
     }
     .story-enhanced {
       position: relative;
+      --story-stage-height: min(62svh, 38rem);
+      --story-heading-height: clamp(3rem, 6svh, 4.5rem);
+      --story-stage-gap: clamp(1rem, 2svh, 1.5rem);
+      --story-shell-height: calc(
+        var(--story-heading-height) + var(--story-stage-gap) +
+          var(--story-stage-height)
+      );
+    }
+    .story-enhanced .story-stage-shell {
+      position: sticky;
+      z-index: 1;
+      top: calc((100svh - var(--story-shell-height)) / 2);
+      display: grid;
+      height: var(--story-shell-height);
+      grid-template-rows: var(--story-heading-height) minmax(0, 1fr);
+      gap: var(--story-stage-gap);
+      width: 100%;
+    }
+    .story-enhanced .story-heading {
+      display: grid;
+      position: relative;
+      z-index: 2;
+      place-items: center;
+      margin: 0;
+      padding-inline: 1rem;
+      text-align: center;
     }
     .story-enhanced .story-copy {
       display: block;
     }
     .story-enhanced .story-stage {
-      position: sticky;
+      position: relative;
       z-index: 1;
-      top: 12svh;
       display: grid;
-      height: 76svh;
-      max-height: 48rem;
-      grid-template-columns: 1fr 1fr;
-      gap: 5rem;
+      height: 100%;
+      grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+      gap: clamp(2.5rem, 4vw, 4rem);
       pointer-events: none;
     }
     .story-enhanced .story-stage-copy,
@@ -326,12 +457,36 @@
       position: relative;
       min-width: 0;
     }
+    .store-story-section .story-enhanced .story-stage::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      pointer-events: none;
+      top: -12svh;
+      bottom: -12svh;
+      left: calc((100% - 100vw) / 2);
+      width: 100vw;
+      background:
+        linear-gradient(
+          120deg,
+          transparent 64%,
+          rgb(from var(--color-brand-600) r g b / 7%) 64% 77%,
+          transparent 77% 78%,
+          rgb(from var(--color-brand-600) r g b / 16%) 78% 78.2%,
+          transparent 78.2%
+        ),
+        radial-gradient(
+          ellipse at 24% 50%,
+          var(--color-background) 5%,
+          transparent 65%
+        );
+    }
     .story-enhanced .story-stage-copy {
       overflow: hidden;
     }
     .story-enhanced .story-driver {
       position: relative;
-      margin-top: -76svh;
+      margin-top: calc(var(--story-shell-height) * -1);
     }
     .story-enhanced .story-chapter {
       min-height: 85svh;
@@ -351,6 +506,8 @@
     }
     .products-stage {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      min-width: 0;
       position: sticky;
       top: 0;
       min-height: 100svh;
@@ -359,6 +516,20 @@
     }
     .products-track {
       min-height: 200svh;
+    }
+    .products-rail-enhanced .products-track {
+      min-height: 300svh;
+    }
+    .products-rail-enhanced .products-rail-viewport {
+      overflow: hidden;
+    }
+    .products-rail-enhanced .products-rail {
+      width: 100%;
+      padding-bottom: 0;
+    }
+    .products-rail-enhanced .products-rail-items .product-card {
+      width: calc((100% - 2rem) / 3);
+      flex: 0 0 calc((100% - 2rem) / 3);
     }
     .contact-content {
       display: grid;
@@ -387,13 +558,90 @@
       display: grid;
       align-content: center;
       padding-block: clamp(3rem, 6vw, 6rem);
-      background: var(--color-foreground);
+      background: transparent;
     }
-    #denis.denis-enhanced + #san-pham-denis {
+    .denis-documents-enhanced {
+      min-height: 500svh;
+      isolation: isolate;
+    }
+    .denis-documents-enhanced .denis-document-mobile {
+      display: none;
+    }
+    .denis-documents-enhanced .denis-document-stage {
+      position: sticky;
+      top: 0;
+      display: grid;
+      height: 100svh;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(
+          90deg,
+          rgb(from var(--color-foreground) r g b / 94%),
+          rgb(from var(--color-foreground) r g b / 76%) 58%,
+          rgb(from var(--color-foreground) r g b / 90%)
+        ),
+        url("/images/shop/denis/Denis_Banner.jpg") center / cover;
+    }
+    .denis-documents-enhanced .denis-document-panel {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--color-surface);
+      isolation: isolate;
+      pointer-events: none;
+    }
+    .denis-documents-enhanced .denis-document-copy {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      pointer-events: none;
+    }
+    .denis-documents-enhanced [data-denis-document-copy] {
+      grid-area: 1 / 1;
+      width: min(42rem, 70vw);
+    }
+    .denis-documents-enhanced [data-side="left"] {
+      padding-right: 54vw;
+    }
+    .denis-documents-enhanced [data-side="right"] {
+      padding-left: 54vw;
+    }
+    .denis-documents-enhanced .denis-document-card {
+      position: relative;
+      display: grid;
+      width: min(30vw, 28rem);
+      pointer-events: auto;
+    }
+    .denis-documents-enhanced .denis-document-frame {
+      height: min(64svh, 38rem);
+      width: 100%;
+      background: rgb(from var(--color-foreground) r g b / 28%);
+    }
+    .denis-documents-enhanced .denis-document-label {
+      position: absolute;
+      z-index: 1;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      border-radius: var(--radius-control);
+      background: var(--color-foreground);
+      padding: 0.35rem 0.55rem;
+    }
+    .denis-documents-enhanced .denis-document-driver {
+      display: block;
       margin-top: -100svh;
     }
+    .denis-documents-enhanced [data-denis-document-chapter] {
+      min-height: 100svh;
+    }
+    #denis.denis-enhanced + #san-pham-denis {
+      margin-top: 0;
+    }
     .denis-enhanced .denis-bridge-pin {
-      background: var(--color-foreground);
+      background: transparent;
     }
   }
   @media (max-width: 639px) {

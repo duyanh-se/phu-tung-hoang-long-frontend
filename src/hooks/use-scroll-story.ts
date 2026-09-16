@@ -1,6 +1,6 @@
 "use client";
 import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { motionPresets, motionQueries } from "@/styles/motion";
 
 const storyCopyTravel = 160;
@@ -64,63 +64,91 @@ export function useScrollStory() {
           gsap.set(panels[0], { opacity: 1 });
           gsap.set(contents, { opacity: 0 });
           gsap.set(contents[0], { opacity: 1 });
-          chapters.slice(1).forEach((chapter, index) => {
-            const position = index + 1;
-            const transition = gsap.timeline({
-              scrollTrigger: {
-                trigger: chapter,
-                start: "top 70%",
-                end: "top 30%",
-                scrub: motionPresets.scrub.story,
-                invalidateOnRefresh: true,
-              },
-            });
-
+          let active = 0;
+          let requested = 0;
+          let changing = false;
+          let transition: gsap.core.Timeline | undefined;
+          const changeScene = () => {
+            if (requested === active || changing) return;
+            changing = true;
+            const direction = requested > active ? 1 : -1;
+            transition = gsap.timeline();
+            // Finish the outgoing scene before revealing either incoming layer.
             transition
-              .fromTo(
-                panels[position - 1],
-                { opacity: 1 },
+              .to(
+                panels[active],
+                { opacity: 0, duration: motionPresets.story.exit },
+                0,
+              )
+              .to(
+                contents[active],
                 {
                   opacity: 0,
-                  ease: "none",
-                  immediateRender: false,
+                  y: -storyCopyTravel * direction,
+                  duration: motionPresets.story.exit,
                 },
                 0,
               )
-              .fromTo(
-                panels[position],
-                { opacity: 0 },
-                {
-                  opacity: 1,
-                  ease: "none",
-                  immediateRender: false,
-                },
-                0,
-              )
-              .fromTo(
-                contents[position - 1],
-                { opacity: 1, y: 0 },
-                {
-                  opacity: 0,
-                  y: -storyCopyTravel,
-                  ease: "none",
-                  immediateRender: false,
-                },
-                0,
-              )
-              .fromTo(
-                contents[position],
-                { opacity: 0, y: storyCopyTravel },
-                {
-                  opacity: 1,
-                  y: 0,
-                  ease: "none",
-                  immediateRender: false,
-                },
-                0,
-              );
+              .add(() => {
+                active = requested;
+                gsap.set(contents[active], { y: storyCopyTravel * direction });
+              })
+              .add(() => {
+                // Resolve the latest scroll destination after the exit finishes.
+                transition = gsap
+                  .timeline({
+                    onComplete: () => {
+                      changing = false;
+                      changeScene();
+                    },
+                  })
+                  .to(
+                    panels[active],
+                    {
+                      opacity: 1,
+                      duration: motionPresets.story.enter,
+                      ease: motionPresets.ease,
+                    },
+                    0,
+                  )
+                  .to(
+                    contents[active],
+                    {
+                      opacity: 1,
+                      y: 0,
+                      duration: motionPresets.story.enter,
+                      ease: motionPresets.ease,
+                    },
+                    0,
+                  );
+              });
+          };
+          const syncScene = () => {
+            requested = chapters.reduce(
+              (position, chapter, index) =>
+                chapter.getBoundingClientRect().top <= window.innerHeight * 0.5
+                  ? index
+                  : position,
+              0,
+            );
+            changeScene();
+          };
+          const trigger = ScrollTrigger.create({
+            trigger: root,
+            start: "top bottom",
+            end: "bottom top",
+            onUpdate: syncScene,
+            onRefresh: syncScene,
           });
-          return () => root.classList.remove("story-enhanced");
+          syncScene();
+          return () => {
+            trigger.kill();
+            transition?.kill();
+            gsap.set([...panels, ...contents], {
+              clearProps: "opacity,transform",
+            });
+            root.classList.remove("story-enhanced");
+          };
         },
       );
       return () => media.revert();

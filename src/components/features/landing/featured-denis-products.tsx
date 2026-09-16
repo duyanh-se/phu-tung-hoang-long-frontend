@@ -1,4 +1,7 @@
 "use client";
+import { useRef, type ReactNode } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
+import { motionPresets, motionQueries } from "@/styles/motion";
 import { useDenisProducts } from "@/hooks/use-denis-products";
 import { landingContent } from "@/config/landing";
 import { Container } from "@/components/layout/container";
@@ -11,6 +14,43 @@ import { ProductCard } from "@/components/features/products/product-card";
 import { ProductSkeleton } from "@/components/features/products/product-skeleton";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { ProductsStage } from "./products-stage";
+
+function ProductsRail({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      const viewport = ref.current;
+      const section = viewport?.closest<HTMLElement>("#san-pham-denis");
+      const track = section?.querySelector<HTMLElement>(".products-track");
+      const rail = viewport?.querySelector<HTMLElement>("[data-products-rail]");
+      if (!section || !track || !rail) return;
+      const media = gsap.matchMedia();
+      media.add(motionQueries.stack, () => {
+        if (window.matchMedia(motionQueries.reduced).matches) return;
+        section.classList.add("products-rail-enhanced");
+        gsap.to(rail, {
+          x: () => -(rail.scrollWidth - rail.clientWidth),
+          ease: "none",
+          scrollTrigger: {
+            trigger: track,
+            start: "top top",
+            end: "bottom bottom+=100%",
+            scrub: motionPresets.scrub.gallery,
+            invalidateOnRefresh: true,
+          },
+        });
+        return () => section.classList.remove("products-rail-enhanced");
+      });
+      return () => media.revert();
+    },
+    { scope: ref },
+  );
+  return (
+    <div ref={ref} className="products-rail-viewport">
+      {children}
+    </div>
+  );
+}
 
 export function FeaturedDenisProducts() {
   const { data, error, isLoading, refetch } = useDenisProducts();
@@ -42,15 +82,15 @@ export function FeaturedDenisProducts() {
                 <Button onClick={refetch}>Thử lại</Button>
               </Card>
             ) : data?.data.length ? (
-              <ScrollReveal
-                group
-                variant="cards"
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-              >
-                {data.data.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </ScrollReveal>
+              <ProductsRail>
+                <div data-products-rail className="products-rail">
+                  <div className="products-rail-items">
+                    {data.data.map((product) => (
+                      <ProductCard compact key={product.id} product={product} />
+                    ))}
+                  </div>
+                </div>
+              </ProductsRail>
             ) : (
               <EmptyState />
             )}
