@@ -1,21 +1,43 @@
 import type { ProductDto } from "@/types/api";
+import { formatMoney } from "@/lib/format-money";
 import { Card } from "@/components/ui/card";
 import { Paragraph, Typography } from "@/components/ui/typography";
 import { MediaFrame } from "@/components/ui/media-frame";
 
-export function ProductCard({ product }: { product: ProductDto }) {
+export function ProductCard({
+  product,
+  compact = false,
+}: {
+  product: ProductDto;
+  compact?: boolean;
+}) {
   return (
-    <Card className="product-card group flex h-full min-h-64 flex-col gap-5 border-t-2 border-t-brand-600 p-6 sm:p-8">
-      {product.imageUrl && (
+    <Card
+      className={`product-card group flex min-h-64 flex-col border-t-2 border-t-brand-600 ${
+        compact
+          ? "product-card-compact h-auto self-stretch gap-3 p-4"
+          : "h-full gap-5 p-6 sm:p-8"
+      }`}
+    >
+      {(product.imageUrl || compact) && (
         <MediaFrame
           src={product.imageUrl}
           alt={product.name || product.code}
           contain
-          className="aspect-square rounded-control"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          fallbackLabel="DENIS"
+          className={
+            compact
+              ? "aspect-[4/3] rounded-control"
+              : "aspect-square rounded-control"
+          }
+          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 25vw"
         />
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+      <div
+        className={`flex flex-wrap items-center justify-between gap-3 border-b border-border ${
+          compact ? "pb-3" : "pb-4"
+        }`}
+      >
         <Typography variant="eyebrow" className="text-brand-600">
           {product.manufacturer?.name || "Phụ tùng"}
         </Typography>
@@ -26,16 +48,20 @@ export function ProductCard({ product }: { product: ProductDto }) {
           {product.code}
         </Typography>
       </div>
-      <Typography as="h3" variant="cardTitle" className="break-words">
+      <Typography
+        as="h3"
+        variant="cardTitle"
+        className={`break-words ${compact ? "line-clamp-3" : ""}`}
+      >
         {product.name || product.code}
       </Typography>
       <Paragraph
         weight="bold"
-        className="mt-auto break-words pt-4 tabular-nums"
+        className={`mt-auto ${compact ? "pt-1" : "pt-4"} break-words tabular-nums`}
       >
         {product.price === null
           ? "Liên hệ báo giá"
-          : product.price + " " + product.currency}
+          : formatMoney(product.price, product.currency)}
       </Paragraph>
     </Card>
   );

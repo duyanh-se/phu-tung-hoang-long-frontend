@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function mockCatalog(page: Page, missing = false) {
+async function mockCatalog(page: Page, missing = false, count = 1) {
   await page.route("**/api/v1/manufacturers?**", (route) =>
     route.fulfill({
       json: {
@@ -15,17 +15,18 @@ async function mockCatalog(page: Page, missing = false) {
     const currentPage = Number(url.searchParams.get("page") || 1);
     return route.fulfill({
       json: {
-        data: [
-          {
-            id: "oil-1",
-            name: "DENIS MAXSPEED 10W40",
-            code: "DENIS-01",
-            imageUrl: null,
-            price: "67000",
-            currency: "VND",
-            manufacturer: { name: "DENIS" },
-          },
-        ],
+        data: Array.from({ length: count }, (_, index) => ({
+          id: `oil-${index + 1}`,
+          name:
+            index === 0
+              ? "DENIS MAXSPEED 10W40"
+              : `DENIS MAXSPEED ${index + 1}`,
+          code: `DENIS-${String(index + 1).padStart(2, "0")}`,
+          imageUrl: null,
+          price: "67000",
+          currency: "VND",
+          manufacturer: { name: "DENIS" },
+        })),
         page: currentPage,
         limit: 12,
         total: 13,
@@ -58,6 +59,9 @@ for (const viewport of [
       "1",
     );
     await page.screenshot({ path: testInfo.outputPath("hero.png") });
+    await expect(
+      page.getByRole("heading", { name: "Khám phá cửa hàng" }),
+    ).toHaveCount(1);
     for (const section of [
       "#cau-chuyen",
       "#denis",
@@ -67,6 +71,12 @@ for (const viewport of [
     ]) {
       const target = page.locator(section);
       if (await target.count()) await target.scrollIntoViewIfNeeded();
+      if (section === "#cau-chuyen") {
+        await page.waitForTimeout(700);
+        await page.screenshot({
+          path: testInfo.outputPath("story-section.png"),
+        });
+      }
       await expect
         .poll(() =>
           page.evaluate(
@@ -101,10 +111,32 @@ for (const viewport of [
         "opacity",
         "1",
       );
-      await expect(page.locator(".story-stage")).toHaveCSS(
+      await expect(page.locator(".story-stage-shell")).toHaveCSS(
         "position",
         "sticky",
       );
+      await expect
+        .poll(() =>
+          page.evaluate(() => {
+            const heading = document.querySelector<HTMLElement>(
+              "[data-story-heading]",
+            );
+            const stage = document.querySelector<HTMLElement>(".story-stage");
+            const shell =
+              document.querySelector<HTMLElement>(".story-stage-shell");
+            if (!heading || !stage || !shell) return false;
+            const headingBounds = heading.getBoundingClientRect();
+            const stageBounds = stage.getBoundingClientRect();
+            const shellBounds = shell.getBoundingClientRect();
+            return (
+              headingBounds.bottom <= stageBounds.top &&
+              Math.abs(
+                shellBounds.top + shellBounds.height / 2 - innerHeight / 2,
+              ) <= 1
+            );
+          }),
+        )
+        .toBe(true);
       await page.screenshot({ path: testInfo.outputPath("story.png") });
     } else {
       await expect(page.locator(".story-track")).not.toHaveClass(
@@ -112,7 +144,7 @@ for (const viewport of [
       );
       await expect(page.locator(".story-inline").first()).toBeVisible();
     }
-    await expect(page.locator(".gallery-capability-card")).toHaveCount(3);
+    await expect(page.locator(".gallery-capability-card")).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 }
@@ -196,7 +228,7 @@ test("enhanced scenes provide progress, bridge and hover feedback", async ({
 
 test("DENIS content panel slides up to replace the brand title", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await mockCatalog(page);
   await page.goto("/");
@@ -205,12 +237,16 @@ test("DENIS content panel slides up to replace the brand title", async ({
   await page
     .locator("[data-denis-bridge]")
     .evaluate((bridge) =>
+      scrollTo(0, bridge.getBoundingClientRect().top + scrollY),
+    );
+  await page.screenshot({ path: testInfo.outputPath("denis-banner.png") });
+
+  await page
+    .locator("[data-denis-bridge]")
+    .evaluate((bridge) =>
       scrollTo(
         0,
-        bridge.getBoundingClientRect().top +
-          scrollY +
-          bridge.clientHeight -
-          innerHeight,
+        bridge.getBoundingClientRect().top + scrollY + innerHeight * 1.3,
       ),
     );
 
@@ -233,53 +269,229 @@ test("DENIS content panel slides up to replace the brand title", async ({
     .toBe(true);
 });
 
-test("product section rises over the sticky DENIS panel", async ({ page }) => {
+test("DENIS introduction shows the supplied product media", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await mockCatalog(page);
+  await page.goto("/");
+
+  const section = page.locator("#denis");
+  await expect(
+    section.getByAltText(
+      "Các thùng dầu nhớt DENIS được xếp trong xe giao hàng",
+    ),
+  ).toBeVisible();
+  const documentPanels = section.locator("[data-denis-document-panel]");
+  await expect(documentPanels.nth(0)).toHaveAttribute(
+    "href",
+    "/images/shop/denis/745503622_1367201702021569_7003704816950467242_n.jpg",
+  );
+  await expect(documentPanels.nth(1)).toHaveAttribute("target", "_blank");
+  await expect(documentPanels).toHaveCount(3);
+  await section
+    .locator("[data-denis-bridge]")
+    .evaluate((bridge) =>
+      scrollTo(
+        0,
+        bridge.getBoundingClientRect().top + scrollY + innerHeight * 1.3,
+      ),
+    );
+  await section
+    .locator("[data-denis-panel]")
+    .screenshot({ path: testInfo.outputPath("denis-media.png") });
+  const documentStage = section.locator(".denis-document-stage");
+  await expect(documentStage.locator("a")).toHaveCount(3);
+  await section
+    .locator(".denis-document-track")
+    .evaluate((track) =>
+      scrollTo(
+        0,
+        track.getBoundingClientRect().top +
+          scrollY +
+          ((track as HTMLElement).offsetHeight - innerHeight) * 0.5,
+      ),
+    );
+  await page.waitForTimeout(900);
+  await documentStage.screenshot({
+    path: testInfo.outputPath("denis-documents-stack.png"),
+  });
+  await section
+    .locator(".denis-document-track")
+    .evaluate((track) =>
+      scrollTo(
+        0,
+        track.getBoundingClientRect().top +
+          scrollY +
+          ((track as HTMLElement).offsetHeight - innerHeight) * 0.75,
+      ),
+    );
+  await page.waitForTimeout(900);
+  await expect(documentStage).toHaveCSS("position", "sticky");
+  await expect(section.locator("[data-denis-document-panel]").nth(2)).toHaveCSS(
+    "opacity",
+    "1",
+  );
+  await expect(section.locator(".denis-document-card").nth(2)).toBeInViewport();
+  await documentStage.screenshot({
+    path: testInfo.outputPath("denis-documents.png"),
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(section).not.toHaveClass(/denis-enhanced/);
+  const featureImage = section.getByAltText(
+    "Các thùng dầu nhớt DENIS được xếp trong xe giao hàng",
+  );
+  await featureImage.scrollIntoViewIfNeeded();
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath("denis-media-mobile.png"),
+  });
+});
+
+test("DENIS documents alternate sides over fixed exclusive descriptions", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await mockCatalog(page);
+  await page.goto("/");
+  const track = page.locator(".denis-document-track");
+  await expect(track).toHaveClass(/denis-documents-enhanced/);
+  for (const progress of [0.2, 0.45, 0.7, 0.375, 0.125]) {
+    await track.evaluate(
+      (element, progress) =>
+        scrollTo(
+          0,
+          element.getBoundingClientRect().top +
+            scrollY +
+            ((element as HTMLElement).offsetHeight - innerHeight) * progress,
+        ),
+      progress,
+    );
+    await page.waitForTimeout(1200);
+    const index = Math.min(2, Math.floor(progress * 4));
+    const state = await page.evaluate((index) => {
+      const copies = [
+        ...document.querySelectorAll<HTMLElement>("[data-denis-document-copy]"),
+      ];
+      const active = copies[index].getBoundingClientRect();
+      const card = document
+        .querySelectorAll<HTMLElement>(".denis-document-card")
+        [index].getBoundingClientRect();
+      return {
+        visible: copies.map((copy) => Number(getComputedStyle(copy).opacity)),
+        centerX: active.x + active.width / 2,
+        centerY: active.y + active.height / 2,
+        cardCenterX: card.x + card.width / 2,
+      };
+    }, index);
+    expect(state.visible[index]).toBeGreaterThan(0.75);
+    for (const [copyIndex, opacity] of state.visible.entries()) {
+      if (copyIndex !== index) expect(opacity).toBeLessThan(0.25);
+    }
+    expect(Math.abs(state.centerX - 720)).toBeLessThanOrEqual(1);
+    expect(Math.abs(state.centerY - 450)).toBeLessThanOrEqual(20);
+    if (index % 2 === 0) expect(state.cardCenterX).toBeLessThan(720);
+    else expect(state.cardCenterX).toBeGreaterThan(720);
+    await page.screenshot({
+      path: testInfo.outputPath(`denis-alternate-${progress}.png`),
+    });
+  }
+});
+
+test("DENIS final image exits above the viewport before products enter", async ({
+  page,
+}, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await mockCatalog(page);
   await page.goto("/");
   await expect(page.locator("#denis")).toHaveClass(/denis-enhanced/);
 
-  // Check the whole covering interval, then reverse direction.
-  for (const nextTop of [900, 450, 1, 450, 900]) {
-    await page.locator("#san-pham-denis").evaluate((products, top) => {
-      scrollTo(0, products.getBoundingClientRect().top + scrollY - top);
-    }, nextTop);
+  const track = page.locator(".denis-document-track");
+  await expect(track).toHaveClass(/denis-documents-enhanced/);
+  await track.evaluate((storyTrack) =>
+    scrollTo(
+      0,
+      storyTrack.getBoundingClientRect().top +
+        scrollY +
+        ((storyTrack as HTMLElement).offsetHeight - innerHeight) * 0.75,
+    ),
+  );
+  await page.waitForTimeout(900);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>(
+          ".denis-document-stage",
+        );
+        const finalPanel = document.querySelectorAll<HTMLElement>(
+          "[data-denis-document-panel]",
+        )[2];
+        const products = document.querySelector<HTMLElement>("#san-pham-denis");
+        if (!stage || !finalPanel || !products) return false;
+        return (
+          getComputedStyle(stage).position === "sticky" &&
+          Number(getComputedStyle(finalPanel).opacity) === 1 &&
+          products.getBoundingClientRect().top >= innerHeight
+        );
+      }),
+    )
+    .toBe(true);
+  await page
+    .locator("#san-pham-denis")
+    .evaluate((products) =>
+      scrollTo(0, products.getBoundingClientRect().top + scrollY - 450),
+    );
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const finalPanel = document.querySelectorAll<HTMLElement>(
+          "[data-denis-document-panel]",
+        )[2];
+        const products = document.querySelector<HTMLElement>("#san-pham-denis");
+        if (!finalPanel || !products) return false;
+        return (
+          Number(getComputedStyle(finalPanel).opacity) === 1 &&
+          Boolean(
+            document
+              .elementFromPoint(innerWidth / 2, innerHeight / 2)
+              ?.closest("#san-pham-denis"),
+          )
+        );
+      }),
+    )
+    .toBe(true);
+  for (const offset of [900, 450, 1]) {
+    await page
+      .locator("#san-pham-denis")
+      .evaluate(
+        (products, offset) =>
+          scrollTo(0, products.getBoundingClientRect().top + scrollY - offset),
+        offset,
+      );
     await expect
       .poll(() =>
-        page.evaluate((top) => {
-          const panel =
-            document.querySelector<HTMLElement>("[data-denis-panel]")!;
-          const stage =
-            document.querySelector<HTMLElement>(".denis-bridge-pin")!;
-          const products =
-            document.querySelector<HTMLElement>("#san-pham-denis")!;
-          const covered =
-            top >= innerHeight ||
-            Boolean(
-              document
-                .elementFromPoint(
-                  innerWidth / 2,
-                  Math.min(top + 20, innerHeight - 1),
-                )
-                ?.closest("#san-pham-denis"),
-            );
-          return (
-            Math.abs(panel.getBoundingClientRect().top) <= 1 &&
-            Math.abs(stage.getBoundingClientRect().top) <= 1 &&
-            Math.abs(products.getBoundingClientRect().top - top) <= 1 &&
-            covered
-          );
-        }, nextTop),
+        page
+          .locator(".denis-document-card")
+          .last()
+          .evaluate((card) => card.getBoundingClientRect().bottom),
       )
-      .toBe(true);
+      .toBeLessThanOrEqual(0);
+    await page.screenshot({
+      path: testInfo.outputPath(`denis-exit-${offset}.png`),
+    });
   }
 });
 
-test("product stage stays centered until gallery covers it", async ({
+test("product stage stays centered while the product rail crosses horizontally", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await mockCatalog(page);
+  await mockCatalog(page, false, 6);
   await page.goto("/");
   await expect(page.locator(".story-track")).toHaveClass(/story-enhanced/);
 
@@ -293,13 +505,17 @@ test("product stage stays centered until gallery covers it", async ({
     "position",
     "sticky",
   );
+  await expect(page.locator(".product-card-compact")).toHaveCount(6);
+  await expect(page.locator("#san-pham-denis")).toHaveClass(
+    /products-rail-enhanced/,
+  );
   await expect
     .poll(() =>
       page.evaluate(() => {
         const stage = document.querySelector<HTMLElement>(
           "[data-products-stage]",
         );
-        const gallery = document.querySelector<HTMLElement>("#khong-gian");
+        const gallery = document.querySelector<HTMLElement>("#ket-noi");
         if (!stage || !gallery) return false;
         const stageBounds = stage.getBoundingClientRect();
         const galleryBounds = gallery.getBoundingClientRect();
@@ -310,6 +526,49 @@ test("product stage stays centered until gallery covers it", async ({
       }),
     )
     .toBe(true);
+  const track = page.locator(".products-track");
+  await track.evaluate((element) =>
+    scrollTo(
+      0,
+      element.getBoundingClientRect().top +
+        scrollY +
+        ((element as HTMLElement).offsetHeight - innerHeight) * 0.5,
+    ),
+  );
+  await expect
+    .poll(() =>
+      page
+        .locator("[data-products-rail]")
+        .evaluate((rail) => getComputedStyle(rail).transform),
+    )
+    .not.toBe("none");
+  await page
+    .locator(".product-card-compact h3")
+    .nth(1)
+    .evaluate((el) => {
+      el.textContent = "Nhớt Denis số 0.8L 10W40 MAXSPEED SAE API SL JASO MA2";
+    });
+  const heights = await page
+    .locator(".product-card-compact")
+    .evaluateAll((cards) =>
+      cards.map((card) => card.getBoundingClientRect().height),
+    );
+  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1);
+  await page.waitForTimeout(1500);
+  await expect(
+    page.locator("#san-pham-denis .section-heading"),
+  ).toBeInViewport();
+  await expect(
+    page.getByRole("link", { name: "Xem tất cả DENIS" }),
+  ).toBeInViewport();
+  await expect
+    .poll(() =>
+      page
+        .locator(".products-stage")
+        .evaluate((stage) => stage.getBoundingClientRect().width <= innerWidth),
+    )
+    .toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("products-rail.png") });
 });
 
 test("desktop sections pin in place before the next section covers them", async ({
@@ -336,6 +595,71 @@ test("desktop sections pin in place before the next section covers them", async 
     .toBe(true);
 });
 
+test("Store Story stays below the hero during section entry", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 934 });
+  await mockCatalog(page);
+  await page.goto("/");
+  await expect(page.locator(".story-track")).toHaveClass(/story-enhanced/);
+  for (const y of [0, 180, 600]) {
+    await page.evaluate((offset) => scrollTo(0, offset), y);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const section = document
+            .querySelector("#cau-chuyen")!
+            .getBoundingClientRect();
+          const stage = document
+            .querySelector(".story-stage")!
+            .getBoundingClientRect();
+          const heading = document
+            .querySelector("[data-story-heading]")!
+            .getBoundingClientRect();
+          const shell = document
+            .querySelector(".story-stage-shell")!
+            .getBoundingClientRect();
+          return shell.top >= section.top && stage.top >= heading.bottom;
+        }),
+      )
+      .toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`story-entry-${y}.png`),
+    });
+  }
+});
+
+test("Store Story heading leaves with its section before DENIS takes over", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await mockCatalog(page);
+  await page.goto("/");
+  await expect(page.locator(".story-track")).toHaveClass(/story-enhanced/);
+
+  await page
+    .locator("#denis")
+    .evaluate((section) =>
+      scrollTo(0, section.getBoundingClientRect().top + scrollY + 120),
+    );
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const heading = document.querySelector<HTMLElement>(
+          "[data-story-heading]",
+        );
+        const denis = document.querySelector<HTMLElement>("#denis");
+        if (!heading || !denis) return false;
+        return (
+          heading.getBoundingClientRect().bottom <= 0 &&
+          denis.getBoundingClientRect().top <= 0
+        );
+      }),
+    )
+    .toBe(true);
+});
+
 test("header pins through the hero and leaves before Store Story covers it", async ({
   page,
 }) => {
@@ -356,7 +680,7 @@ test("header pins through the hero and leaves before Store Story covers it", asy
       scrollTo(0, section.getBoundingClientRect().top + scrollY),
     );
   await expect(header).not.toHaveAttribute("data-home-pinned", "");
-  await expect(header).toHaveCSS("position", "relative");
+  await expect(header).toHaveCSS("position", "absolute");
 });
 
 test("active Store Story copy stays centered with its image", async ({
@@ -437,21 +761,89 @@ test("Store Story text leaves space while chapters trade places", async ({
     .toBe(true);
 });
 
-test("gallery stays image-led after direct section navigation", async ({
+test("Store Story completes exclusive scenes when scrolling stops or reverses", async ({
   page,
-}) => {
+}, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await mockCatalog(page);
+  await page.goto("/");
+  await expect(page.locator(".story-track")).toHaveClass(/story-enhanced/);
+  for (const [index, offset] of [
+    [1, 0.49],
+    [0, 0.51],
+    [4, 0.49],
+    [2, 0.49],
+  ]) {
+    const result = await page.evaluate(
+      async ({ index, offset }) => {
+        const chapters = document.querySelectorAll<HTMLElement>(
+          "[data-story-chapter]",
+        );
+        const copies = [
+          ...document.querySelectorAll<HTMLElement>("[data-story-content]"),
+        ];
+        const images = [
+          ...document.querySelectorAll<HTMLElement>("[data-story-panel]"),
+        ];
+        const target = index === 0 ? chapters[1] : chapters[index];
+        scrollTo(
+          0,
+          target.getBoundingClientRect().top + scrollY - innerHeight * offset,
+        );
+        let overlap = false;
+        const start = performance.now();
+        while (performance.now() - start < 2200) {
+          await new Promise(requestAnimationFrame);
+          for (const layers of [copies, images]) {
+            if (
+              layers.filter(
+                (layer) => Number(getComputedStyle(layer).opacity) > 0.001,
+              ).length > 1
+            )
+              overlap = true;
+          }
+        }
+        return {
+          overlap,
+          copies: copies.map((layer) =>
+            Number(getComputedStyle(layer).opacity),
+          ),
+          images: images.map((layer) =>
+            Number(getComputedStyle(layer).opacity),
+          ),
+        };
+      },
+      { index, offset },
+    );
+    expect(result.overlap).toBe(false);
+    for (const [position, opacity] of result.copies.entries()) {
+      expect(opacity).toBeCloseTo(position === index ? 1 : 0, 3);
+      expect(result.images[position]).toBeCloseTo(opacity, 3);
+    }
+    await page.screenshot({
+      path: testInfo.outputPath(`story-settled-${index}.png`),
+    });
+  }
+});
+
+test("store gallery is removed and contact remains accessible", async ({
+  page,
+}, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockCatalog(page);
   await page.goto("/");
   await page
-    .locator("#khong-gian")
+    .locator("#ket-noi")
     .evaluate((section) =>
       scrollTo(0, section.getBoundingClientRect().top + scrollY),
     );
 
-  const firstCard = page.locator(".gallery-capability-card").first();
-  await expect(firstCard.locator("img")).toBeVisible();
-  await expect(firstCard.locator("[data-gallery-caption]")).toHaveCount(0);
+  await expect(page.locator("#khong-gian")).toHaveCount(0);
+  await page.locator("#ket-noi").scrollIntoViewIfNeeded();
+  await expect(page.locator("#ket-noi")).toBeInViewport();
+  await page.screenshot({
+    path: testInfo.outputPath("contact-without-gallery.png"),
+  });
 });
 
 test("landing removes numbered section and chapter labels", async ({
@@ -524,8 +916,16 @@ test("static story and navigation survive disabled JavaScript", async ({
   const page = await context.newPage();
   await page.goto("http://localhost:3001/");
   await expect(page.locator("h1")).toBeVisible();
-  await expect(page.locator(".story-inline")).toHaveCount(3);
+  await expect(page.locator(".story-inline")).toHaveCount(5);
   await expect(page.locator(".story-inline").first()).toBeVisible();
+  await expect(page.locator(".story-inline img").first()).toHaveAttribute(
+    "alt",
+    "Mặt tiền cửa hàng phụ tùng xe máy Hoàng Long vào buổi tối",
+  );
+  await expect(page.locator(".story-inline img").last()).toHaveAttribute(
+    "alt",
+    "Quầy trưng bày dầu nhớt DENIS và phụ tùng tại Hoàng Long",
+  );
   await expect(page.locator("#denis h2")).toBeVisible();
   await context.close();
 });

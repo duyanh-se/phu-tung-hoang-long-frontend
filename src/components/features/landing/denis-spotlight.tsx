@@ -9,6 +9,9 @@ import { Typography, Paragraph } from "@/components/ui/typography";
 import { ActionLink } from "@/components/ui/action-link";
 import { MotionText } from "@/components/motion/motion-text";
 import { landingContent } from "@/config/landing";
+import { DenisMediaGallery } from "./denis-media-gallery";
+import { DenisDocumentCollage } from "./denis-document-collage";
+import { MediaFrame } from "@/components/ui/media-frame";
 
 const ranges = [
   { label: "MAXSPEED", detail: "Dầu nhớt xe số" },
@@ -21,6 +24,8 @@ export function DenisSpotlight() {
 
   useGSAP(
     () => {
+      const root = ref.current;
+      if (!root) return;
       const media = gsap.matchMedia();
       media.add(
         {
@@ -72,6 +77,10 @@ export function DenisSpotlight() {
               once: true,
             },
           });
+
+          const documents = gsap.utils.toArray<HTMLElement>(
+            "[data-denis-document]",
+          );
 
           if (context.conditions?.desktop) {
             ref.current?.classList.add("denis-enhanced");
@@ -127,6 +136,94 @@ export function DenisSpotlight() {
                 },
               },
             );
+            gsap.fromTo(
+              ".denis-banner-image",
+              { scale: 1.08, yPercent: 5 },
+              {
+                scale: 1,
+                yPercent: -3,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: ref.current,
+                  start: "top bottom",
+                  end: "bottom top",
+                  scrub: motionPresets.scrub.denis,
+                },
+              },
+            );
+            const documentTrack = root.querySelector<HTMLElement>(
+              ".denis-document-track",
+            );
+            const documentPanels = gsap.utils.toArray<HTMLElement>(
+              "[data-denis-document-panel]",
+              root,
+            );
+            const documentChapters = gsap.utils.toArray<HTMLElement>(
+              "[data-denis-document-chapter]",
+              root,
+            );
+            if (
+              documentTrack &&
+              documentPanels.length &&
+              documentChapters.length
+            ) {
+              documentTrack.classList.add("denis-documents-enhanced");
+              const copies = gsap.utils.toArray<HTMLElement>(
+                "[data-denis-document-copy]",
+                root,
+              );
+              gsap.set(copies, { autoAlpha: 0, y: 20 });
+              gsap.set(copies[0], { autoAlpha: 1, y: 0 });
+              gsap.set(documentPanels, { yPercent: 100 });
+              documentPanels.forEach((panel, index) =>
+                gsap.set(panel, { zIndex: index + 1 }),
+              );
+              const documentStory = gsap.timeline({
+                scrollTrigger: {
+                  trigger: documentTrack,
+                  start: "top top",
+                  end: "bottom bottom",
+                  scrub: motionPresets.scrub.denis,
+                  invalidateOnRefresh: true,
+                },
+              });
+              documentStory
+                .to(
+                  documentPanels[0],
+                  { yPercent: 0, ease: "none", duration: 1 },
+                  0,
+                )
+                .to(
+                  documentPanels[0],
+                  { yPercent: -100, ease: "none", duration: 1 },
+                  1,
+                )
+                .to(copies[0], { autoAlpha: 0, y: -16, duration: 0.22 }, 0.9)
+                .to(copies[1], { autoAlpha: 1, y: 0, duration: 0.32 }, 1)
+                .to(
+                  documentPanels[1],
+                  { yPercent: 0, ease: "none", duration: 1 },
+                  1,
+                )
+                .to(
+                  documentPanels[1],
+                  { yPercent: -100, ease: "none", duration: 1 },
+                  2,
+                )
+                .to(copies[1], { autoAlpha: 0, y: -16, duration: 0.22 }, 1.9)
+                .to(copies[2], { autoAlpha: 1, y: 0, duration: 0.32 }, 2)
+                .to(
+                  documentPanels[2],
+                  { yPercent: 0, ease: "none", duration: 1 },
+                  2,
+                )
+                .to(
+                  documentPanels[2],
+                  { yPercent: -100, ease: "none", duration: 1 },
+                  3,
+                )
+                .to(copies[2], { autoAlpha: 0, y: -16, duration: 0.22 }, 3.78);
+            }
           } else {
             gsap.from("[data-denis-bridge-title] [data-motion-line]", {
               yPercent: 110,
@@ -139,8 +236,26 @@ export function DenisSpotlight() {
                 once: true,
               },
             });
+            gsap.from(documents, {
+              opacity: 0,
+              y: motionPresets.mobileDistance,
+              duration: motionPresets.reveal.mobileDuration,
+              stagger: motionPresets.reveal.stagger,
+              ease: motionPresets.ease,
+              clearProps: "opacity,transform",
+              scrollTrigger: {
+                trigger: "[data-denis-document-collage]",
+                start: "top 86%",
+                once: true,
+              },
+            });
           }
-          return () => ref.current?.classList.remove("denis-enhanced");
+          return () => {
+            ref.current?.classList.remove("denis-enhanced");
+            root
+              .querySelector(".denis-document-track")
+              ?.classList.remove("denis-documents-enhanced");
+          };
         },
       );
       return () => media.revert();
@@ -157,8 +272,22 @@ export function DenisSpotlight() {
       aria-labelledby="denis-title"
     >
       <div
+        className="denis-banner pointer-events-none absolute inset-0"
+        aria-hidden="true"
+      >
+        <MediaFrame
+          src={landingContent.denisMedia.banner.image}
+          alt=""
+          className="h-full w-full"
+          imageClassName="denis-banner-image"
+          sizes="100vw"
+          preload
+        />
+        <div className="denis-banner-shade absolute inset-0" />
+      </div>
+      <div
         data-denis-art
-        className="denis-art pointer-events-none absolute inset-0 -z-10"
+        className="denis-art pointer-events-none absolute inset-0"
         aria-hidden="true"
       />
       <div data-denis-bridge className="denis-bridge">
@@ -199,14 +328,14 @@ export function DenisSpotlight() {
                   <br />
                   đang có tại Hoàng Long.
                 </Typography>
+                <DenisMediaGallery />
               </div>
-              <div className="space-y-8 lg:pt-4">
+              <div className="space-y-8 lg:pt-20 ">
                 <Paragraph
                   data-denis-reveal
                   className="max-w-lg text-inverse-muted"
                 >
                   Tìm hiểu các dòng dầu nhớt DENIS đang có tại cửa hàng:
-                  MAXSPEED, SUPERIOR và Scooter Gear Oil.
                 </Paragraph>
                 <div
                   data-denis-ranges
@@ -236,6 +365,7 @@ export function DenisSpotlight() {
           </Container>
         </div>
       </div>
+      <DenisDocumentCollage />
     </section>
   );
 }
