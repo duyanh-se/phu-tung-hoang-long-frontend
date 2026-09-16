@@ -1,20 +1,33 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { type FormEvent } from "react";
+import { useContactRequest } from "@/hooks/use-contact-request";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
 
 export function FooterContactForm() {
-  const [message, setMessage] = useState("");
+  const { submit, isSubmitting, message } = useContactRequest();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("Form đang chờ kết nối kênh tiếp nhận liên hệ.");
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    const success = await submit({
+      fullName: String(values.get("name") ?? ""),
+      email: String(values.get("email") ?? ""),
+      phoneNumber: String(values.get("phone") ?? ""),
+      reason: String(values.get("reason") ?? "") || null,
+    });
+    if (success) form.reset();
   }
 
   return (
-    <form className="footer-contact-form" onSubmit={handleSubmit}>
+    <form
+      className="footer-contact-form"
+      onSubmit={handleSubmit}
+      aria-busy={isSubmitting}
+    >
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="grid gap-2">
           <Typography as="span" variant="label">
@@ -23,6 +36,9 @@ export function FooterContactForm() {
           <Input
             name="name"
             autoComplete="name"
+            maxLength={100}
+            pattern=".*\S.*"
+            disabled={isSubmitting}
             required
             placeholder="Nhập tên của bạn"
           />
@@ -35,6 +51,8 @@ export function FooterContactForm() {
             name="email"
             type="email"
             autoComplete="email"
+            maxLength={254}
+            disabled={isSubmitting}
             required
             placeholder="Email của bạn"
           />
@@ -47,6 +65,7 @@ export function FooterContactForm() {
             name="phone"
             type="tel"
             autoComplete="tel"
+            disabled={isSubmitting}
             required
             placeholder="Số điện thoại của bạn"
           />
@@ -59,11 +78,12 @@ export function FooterContactForm() {
             name="reason"
             className="footer-contact-select"
             defaultValue=""
+            disabled={isSubmitting}
           >
             <option value="">Chọn lý do liên hệ</option>
-            <option value="tu-van">Tư vấn sản phẩm</option>
-            <option value="hop-tac">Hợp tác</option>
-            <option value="khac">Khác</option>
+            <option value="Tư vấn sản phẩm">Tư vấn sản phẩm</option>
+            <option value="Hợp tác">Hợp tác</option>
+            <option value="Khác">Khác</option>
           </select>
         </label>
       </div>
@@ -73,7 +93,9 @@ export function FooterContactForm() {
             {message}
           </Typography>
         ) : null}
-        <Button type="submit">Gửi liên hệ</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Đang gửi..." : "Gửi liên hệ"}
+        </Button>
       </div>
     </form>
   );

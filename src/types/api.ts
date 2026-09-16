@@ -4,6 +4,8 @@ export type { components, paths, operations } from "./generated/api";
 export type Dto<Name extends keyof components["schemas"]> =
   components["schemas"][Name];
 export type ProductDto = Dto<"ProductResponseDto">;
+export type CreateContactRequestDto = Dto<"CreateContactRequestDto">;
+export type ContactRequestDto = Dto<"ContactRequestResponseDto">;
 export type ManufacturerDto = Dto<"ManufacturerResponseDto">;
 export type ManufacturerListDto = Dto<"ManufacturerListResponseDto">;
 export type ManufacturerQuery = NonNullable<
