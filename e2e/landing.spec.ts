@@ -1,5 +1,83 @@
 import { expect, test, type Page } from "@playwright/test";
 
+for (const width of [390, 1440]) {
+  test(`section navigation keeps one clean landing URL at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mockCatalog(page);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto("/");
+    const historyLength = await page.evaluate(() => history.length);
+    await expect(page.locator('a[href*="#"]')).toHaveCount(0);
+    await page.getByRole("link", { name: "Cửa hàng", exact: true }).click();
+    await expect(page).toHaveURL("http://localhost:3001/");
+    await expect(page.locator("#cau-chuyen")).toBeFocused();
+    await expect
+      .poll(async () =>
+        Math.abs((await page.locator("#cau-chuyen").boundingBox())!.y),
+      )
+      .toBeLessThanOrEqual(2);
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+    for (const [name, target] of [
+      ["DENIS", "denis"],
+      ["Bước vào cửa hàng", "cau-chuyen"],
+    ]) {
+      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+      await page.getByRole("link", { name, exact: true }).click();
+      await expect(page.locator(`#${target}`)).toBeFocused();
+      await expect
+        .poll(async () =>
+          Math.abs((await page.locator(`#${target}`).boundingBox())!.y),
+        )
+        .toBeLessThanOrEqual(2);
+    }
+    await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+    await page
+      .getByRole("link", { name: "Khám phá Sản phẩm nổi bật", exact: true })
+      .click();
+    await expect(page.locator("#san-pham-denis")).toBeFocused();
+    await expect
+      .poll(async () =>
+        Math.abs((await page.locator("#san-pham-denis").boundingBox())!.y),
+      )
+      .toBeLessThanOrEqual(2);
+    await expect(page).toHaveURL("http://localhost:3001/");
+    expect(await page.evaluate(() => history.length)).toBe(historyLength);
+    expect(errors).toEqual([]);
+    await page.screenshot({
+      path: testInfo.outputPath("section-without-hash.png"),
+    });
+  });
+}
+
+for (const reducedMotion of ["reduce", "no-preference"] as const) {
+  test(`section links return from catalog without hash and clean old fragments ${reducedMotion}`, async ({
+    page,
+  }) => {
+    await mockCatalog(page);
+    await page.emulateMedia({ reducedMotion });
+    await page.goto("/san-pham?manufacturer=DENIS");
+    await page.getByRole("link", { name: "DENIS", exact: true }).click();
+    await expect(page).toHaveURL("http://localhost:3001/");
+    await expect(page.locator("#denis")).toBeFocused();
+    await expect
+      .poll(async () =>
+        Math.abs((await page.locator("#denis").boundingBox())!.y),
+      )
+      .toBeLessThanOrEqual(2);
+    await page.goto("/#cau-chuyen");
+    await expect(page).toHaveURL("http://localhost:3001/");
+    await expect(page.locator("#cau-chuyen")).toBeFocused();
+    await expect
+      .poll(async () =>
+        Math.abs((await page.locator("#cau-chuyen").boundingBox())!.y),
+      )
+      .toBeLessThanOrEqual(2);
+  });
+}
+
 async function mockCatalog(page: Page, missing = false, count = 1) {
   await page.route("**/api/v1/manufacturers?**", (route) =>
     route.fulfill({

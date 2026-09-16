@@ -5,7 +5,7 @@ import { motionPresets, motionQueries } from "@/styles/motion";
 import { landingContent } from "@/config/landing";
 import { Container } from "@/components/layout/container";
 import { Typography } from "@/components/ui/typography";
-import { ActionLink } from "@/components/ui/action-link";
+import { LandingSectionLink } from "@/components/layout/landing-section-link";
 import { MediaFrame } from "@/components/ui/media-frame";
 import { MotionText } from "@/components/motion/motion-text";
 import { typographyVariants } from "@/styles/typography";
@@ -140,14 +140,16 @@ export function LandingHero() {
             data-hero-line
             className="flex flex-wrap gap-3 pt-2"
           >
-            <ActionLink href="#denis">Khám phá Sản phẩm nổi bật</ActionLink>
-            <ActionLink
-              href="#cau-chuyen"
+            <LandingSectionLink section="san-pham-denis" variant="primary">
+              Khám phá Sản phẩm nổi bật
+            </LandingSectionLink>
+            <LandingSectionLink
+              section="cau-chuyen"
               variant="ghost"
               className="text-surface hover:bg-surface/10 hover:text-surface"
             >
               Bước vào cửa hàng
-            </ActionLink>
+            </LandingSectionLink>
           </div>
         </div>
       </Container>
