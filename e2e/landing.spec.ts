@@ -858,21 +858,88 @@ test("landing removes numbered section and chapter labels", async ({
   await expect(page.getByText("01 / TỪ QUẦY HÀNG")).toHaveCount(0);
 });
 
-test("footer provides a client-side contact form without an external submission", async ({
+for (const width of [390, 1440]) {
+  test(`footer submits contact requests at ${width}px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mockCatalog(page);
+    let requests = 0;
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/api/v1/contact-requests", async (route) => {
+      requests++;
+      expect(route.request().method()).toBe("POST");
+      expect(route.request().postDataJSON()).toEqual({
+        fullName: "Nguyễn An",
+        email: "an@example.com",
+        phoneNumber: "0900000000",
+        reason: "Tư vấn sản phẩm",
+      });
+      await gate;
+      await route.fulfill({
+        status: 201,
+        json: { id: "contact-id", status: "NEW" },
+      });
+    });
+    await page.goto("/");
+    await page.getByLabel("Họ và tên *").fill("  Nguyễn An  ");
+    await page.getByLabel("Email liên lạc *").fill("An@example.com");
+    await page.getByLabel("Số điện thoại *").fill("090 000 0000");
+    await page.getByLabel("Lý do liên hệ").selectOption("Tư vấn sản phẩm");
+    await page.getByRole("button", { name: "Gửi liên hệ" }).click();
+    await expect(
+      page.getByRole("button", { name: "Đang gửi..." }),
+    ).toBeDisabled();
+    await page
+      .locator(".footer-contact-form")
+      .evaluate((form: HTMLFormElement) => form.requestSubmit());
+    release();
+    await expect(page.getByRole("status")).toContainText(
+      "Gửi liên hệ thành công",
+    );
+    expect(requests).toBe(1);
+    await expect(page.getByLabel("Họ và tên *")).toHaveValue("");
+    await page
+      .locator(".footer-contact-form")
+      .screenshot({ path: testInfo.outputPath("contact-success.png") });
+  });
+}
+
+test("footer preserves input after errors and supports retry without a reason", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
   await mockCatalog(page);
+  let requests = 0;
+  await page.route("**/api/v1/contact-requests", async (route) => {
+    expect(route.request().postDataJSON().reason).toBeNull();
+    requests++;
+    if (requests === 1) await route.abort("failed");
+    else if (requests === 2)
+      await route.fulfill({
+        status: 429,
+        json: { message: "Too Many Requests" },
+      });
+    else await route.fulfill({ status: 201, json: { id: "contact-id" } });
+  });
   await page.goto("/");
-  await page.locator("footer").scrollIntoViewIfNeeded();
-
-  await expect(page.getByRole("heading", { name: "Liên hệ" })).toBeVisible();
   await page.getByLabel("Họ và tên *").fill("Nguyễn An");
   await page.getByLabel("Email liên lạc *").fill("an@example.com");
   await page.getByLabel("Số điện thoại *").fill("0900000000");
   await page.getByRole("button", { name: "Gửi liên hệ" }).click();
   await expect(page.getByRole("status")).toContainText(
-    "Form đang chờ kết nối kênh tiếp nhận liên hệ.",
+    "Không kết nối được máy chủ",
+  );
+  await expect(page.getByLabel("Họ và tên *")).toHaveValue("Nguyễn An");
+  await page.getByRole("button", { name: "Gửi liên hệ" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "Bạn gửi yêu cầu quá nhanh",
+  );
+  await page.getByRole("button", { name: "Gửi liên hệ" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "Gửi liên hệ thành công",
   );
 });
 

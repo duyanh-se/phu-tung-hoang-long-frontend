@@ -122,6 +122,43 @@ export interface paths {
         patch: operations["CategoriesController_update"];
         trace?: never;
     };
+    "/api/v1/contact-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** [ADMIN] Danh sách yêu cầu liên hệ, tìm kiếm và lọc trạng thái */
+        get: operations["ContactRequestsController_list"];
+        put?: never;
+        /** Gửi yêu cầu liên hệ, không cần đăng nhập; trạng thái ban đầu NEW */
+        post: operations["ContactRequestsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/contact-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** [ADMIN] Chi tiết yêu cầu liên hệ */
+        get: operations["ContactRequestsController_findOne"];
+        put?: never;
+        post?: never;
+        /** [ADMIN] Xóa vĩnh viễn yêu cầu liên hệ */
+        delete: operations["ContactRequestsController_remove"];
+        options?: never;
+        head?: never;
+        /** [ADMIN] Sửa thông tin hoặc trạng thái yêu cầu liên hệ */
+        patch: operations["ContactRequestsController_update"];
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -314,10 +351,57 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        ContactRequestListResponseDto: {
+            data: components["schemas"]["ContactRequestResponseDto"][];
+            limit: number;
+            page: number;
+            total: number;
+            totalPages: number;
+        };
+        ContactRequestResponseDto: {
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * Format: email
+             * @example guest@example.com
+             */
+            email: string;
+            /** @example Nguyễn Văn An */
+            fullName: string;
+            /** Format: uuid */
+            id: string;
+            /** @example 0901234567 */
+            phoneNumber: string;
+            reason: string | null;
+            status: components["schemas"]["ContactRequestStatus"];
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        ContactRequestStatus: "NEW" | "IN_PROGRESS" | "RESOLVED";
         CreateCategoryDto: {
             description?: string | null;
             /** @example Phụ tùng động cơ */
             name: string;
+        };
+        CreateContactRequestDto: {
+            /**
+             * Format: email
+             * @example guest@example.com
+             */
+            email: string;
+            /** @example Nguyễn Văn An */
+            fullName: string;
+            /**
+             * @description Chuỗi 7–15 chữ số, có thể bắt đầu bằng +. Bỏ khoảng trắng, dấu chấm, gạch ngang và ngoặc trước khi lưu; giữ số 0 đầu.
+             * @example 0901234567
+             */
+            phoneNumber: string;
+            /**
+             * @description Lý do do frontend gửi lên; bỏ qua, null hoặc chuỗi trắng được lưu null.
+             * @example Tư vấn sản phẩm
+             */
+            reason?: string | null;
         };
         CreateManufacturerDto: {
             /** @example Honda */
@@ -343,6 +427,10 @@ export interface components {
              * @example 49140
              */
             price?: number | null;
+        };
+        DeleteContactRequestResponseDto: {
+            /** @example delete success */
+            message: string;
         };
         DeleteManufacturerResponseDto: {
             /** @example delete success */
@@ -453,6 +541,26 @@ export interface components {
             description?: string | null;
             /** @example Phụ tùng động cơ */
             name?: string;
+        };
+        UpdateContactRequestDto: {
+            /**
+             * Format: email
+             * @example guest@example.com
+             */
+            email?: string;
+            /** @example Nguyễn Văn An */
+            fullName?: string;
+            /**
+             * @description Chuỗi 7–15 chữ số, có thể bắt đầu bằng +. Bỏ khoảng trắng, dấu chấm, gạch ngang và ngoặc trước khi lưu; giữ số 0 đầu.
+             * @example 0901234567
+             */
+            phoneNumber?: string;
+            /**
+             * @description Lý do do frontend gửi lên; bỏ qua, null hoặc chuỗi trắng được lưu null.
+             * @example Tư vấn sản phẩm
+             */
+            reason?: string | null;
+            status?: components["schemas"]["ContactRequestStatus"];
         };
         UpdateManufacturerDto: {
             /** @example Honda */
@@ -968,6 +1076,289 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CategoryResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ContactRequestsController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                page?: number;
+                /** @description Tìm theo họ tên, email hoặc số điện thoại đã chuẩn hóa */
+                search?: string;
+                status?: components["schemas"]["ContactRequestStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactRequestListResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ContactRequestsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateContactRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactRequestResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ContactRequestsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactRequestResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ContactRequestsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteContactRequestResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
+    ContactRequestsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateContactRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactRequestResponseDto"];
                 };
             };
             400: {
