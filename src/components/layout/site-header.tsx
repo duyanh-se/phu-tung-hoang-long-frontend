@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/site";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { Typography } from "@/components/ui/typography";
 import { Container } from "./container";
+import { LandingSectionLink } from "./landing-section-link";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -50,18 +51,18 @@ export function SiteHeader() {
           aria-label="Điều hướng chính"
           className="flex flex-wrap items-center gap-1 sm:gap-4"
         >
-          <Link
-            href="/#cau-chuyen"
+          <LandingSectionLink
+            section="cau-chuyen"
             className={`motion-interaction inline-flex min-h-control items-center rounded-control px-3 text-label font-medium ${pathname === "/" ? "text-surface hover:bg-surface/10 hover:text-surface" : "text-muted hover:text-brand-600"}`}
           >
             Cửa hàng
-          </Link>
-          <Link
-            href="/#denis"
+          </LandingSectionLink>
+          <LandingSectionLink
+            section="denis"
             className={`motion-interaction inline-flex min-h-control items-center rounded-control px-3 text-label font-medium ${pathname === "/" ? "text-surface hover:bg-surface/10 hover:text-surface" : "text-muted hover:text-brand-600"}`}
           >
             DENIS
-          </Link>
+          </LandingSectionLink>
           <Link
             href="/san-pham"
             aria-current={pathname === "/san-pham" ? "page" : undefined}
