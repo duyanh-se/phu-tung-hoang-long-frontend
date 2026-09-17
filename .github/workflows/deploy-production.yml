@@ -1,0 +1,49 @@
+name: Deploy frontend production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -eu
+            REPO_DIR="/opt/phu-tung-hoang-long-frontend"
+            if [ -d "$REPO_DIR" ] && [ ! -d "$REPO_DIR/.git" ]; then
+              rm -rf "$REPO_DIR"
+            fi
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              mkdir -p "$REPO_DIR"
+              git clone https://github.com/duyanh-se/phu-tung-hoang-long-frontend.git "$REPO_DIR"
+            fi
+            git config --global --add safe.directory "$REPO_DIR"
+            cd "$REPO_DIR"
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            docker compose -f compose.production.yaml build web
+            docker compose -f compose.production.yaml up -d web
+            for attempt in 1 2 3 4 5 6 7 8 9 10; do
+              if curl --fail --silent --show-error http://127.0.0.1:3001/ >/dev/null; then
+                exit 0
+              fi
+              sleep 3
+            done
+            docker compose -f compose.production.yaml ps
+            docker compose -f compose.production.yaml logs --tail=100 web
+            exit 1
