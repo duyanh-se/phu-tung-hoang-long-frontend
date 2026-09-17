@@ -31,7 +31,7 @@ export function FooterContactForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="grid gap-2">
           <Typography as="span" variant="label">
-            Họ và tên <span className="text-brand-600">*</span>
+            Họ và tên <span className="text-brand-100">*</span>
           </Typography>
           <Input
             name="name"
@@ -45,7 +45,7 @@ export function FooterContactForm() {
         </label>
         <label className="grid gap-2">
           <Typography as="span" variant="label">
-            Email liên lạc <span className="text-brand-600">*</span>
+            Email liên lạc <span className="text-brand-100">*</span>
           </Typography>
           <Input
             name="email"
@@ -59,7 +59,7 @@ export function FooterContactForm() {
         </label>
         <label className="grid gap-2">
           <Typography as="span" variant="label">
-            Số điện thoại <span className="text-brand-600">*</span>
+            Số điện thoại <span className="text-brand-100">*</span>
           </Typography>
           <Input
             name="phone"
@@ -89,7 +89,7 @@ export function FooterContactForm() {
       </div>
       <div className="mt-8 flex flex-wrap items-center justify-end gap-4">
         {message ? (
-          <Typography role="status" variant="caption" className="text-muted">
+          <Typography role="status" variant="caption" className="text-inverse-muted">
             {message}
           </Typography>
         ) : null}

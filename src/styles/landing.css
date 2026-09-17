@@ -333,11 +333,12 @@
     border-radius: 0;
   }
   .site-footer-panel {
-    border-radius: 3rem 3rem 0 0;
-    background: var(--color-brand-50);
+    border-radius: 0;
+    background: var(--color-foreground);
+    color: var(--color-surface);
   }
   .site-footer-wordmark {
-    color: rgb(from var(--color-brand-600) r g b / 7%);
+    color: rgb(from var(--color-surface) r g b / 7%);
     font-size: clamp(4rem, 15vw, 14rem);
     font-weight: var(--font-weight-bold);
     letter-spacing: -0.08em;
