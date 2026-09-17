@@ -42,7 +42,9 @@ async function handle(
       route,
     );
   const users = /^users(\/[\w-]+(\/role)?)?$/.test(route);
-  if (!(auth || resource || users)) return fail("Không tìm thấy API.", 404);
+  const upload = route === "uploads/products";
+  if (!(auth || resource || users || upload))
+    return fail("Không tìm thấy API.", 404);
   if (auth && method !== (route === "auth/me" ? "GET" : "POST"))
     return fail("Phương thức không hợp lệ.", 405);
   if (
@@ -50,18 +52,25 @@ async function handle(
     !(method === "GET" || (method === "PATCH" && route.endsWith("/role")))
   )
     return fail("Phương thức không hợp lệ.", 405);
+  if (upload && method !== "POST")
+    return fail("Phương thức không hợp lệ.", 405);
   const token = request.cookies.get(accessCookie)?.value;
-  const upstream = (target: string, init: RequestInit = {}) =>
-    fetch(`${env.apiBaseUrl.replace(/\/$/, "")}/${target}`, {
+  const upstream = (target: string, init: RequestInit = {}) => {
+    const hasContentType = new Headers(init.headers).has("Content-Type");
+    const headers = {
+      ...(init.body && !hasContentType
+        ? { "Content-Type": "application/json" }
+        : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init.headers,
+    };
+    return fetch(`${env.apiBaseUrl.replace(/\/$/, "")}/${target}`, {
       ...init,
       cache: "no-store",
       signal: AbortSignal.timeout(env.apiTimeoutMs),
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...init.headers,
-      },
+      headers,
     });
+  };
   try {
     if (route === "auth/login" || route === "auth/refresh") {
       const body =
@@ -115,7 +124,16 @@ async function handle(
       });
     const response = await upstream(`${route}${request.nextUrl.search}`, {
       method,
-      ...(method !== "GET" ? { body: await request.text() } : {}),
+      ...(method !== "GET"
+        ? {
+            body: upload ? await request.arrayBuffer() : await request.text(),
+            headers: upload
+              ? {
+                  "Content-Type": request.headers.get("content-type") ?? "",
+                }
+              : undefined,
+          }
+        : {}),
     });
     return new NextResponse(
       response.status === 204 ? null : await response.text(),

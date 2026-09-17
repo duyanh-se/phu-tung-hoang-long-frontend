@@ -1,13 +1,21 @@
 "use client";
-import type { FormEvent, ReactNode } from "react";
+/* eslint-disable @next/next/no-img-element */
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
 import { contactStatuses } from "@/config/admin";
-import type {
-  AdminInput,
-  AdminModule,
-  AdminRecord,
+import {
+  adminService,
+  type AdminInput,
+  type AdminModule,
+  type AdminRecord,
 } from "@/services/admin.service";
 import type { Dto } from "@/types/api";
 
@@ -42,38 +50,73 @@ export function AdminEditor({
   record: AdminRecord | null;
   options: { categories: AdminRecord[]; manufacturers: AdminRecord[] };
   busy: boolean;
-  onSave: (input: AdminInput) => void;
+  onSave: (input: AdminInput) => Promise<boolean>;
   onCancel: () => void;
 }) {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(
+    null,
+  );
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    record && "imageUrl" in record ? record.imageUrl : null,
+  );
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const previewObjectUrl = useRef<string | null>(null);
   const value = (key: string) => recordValue(record, key);
-  function submit(event: FormEvent<HTMLFormElement>) {
+  useEffect(
+    () => () => {
+      if (previewObjectUrl.current)
+        URL.revokeObjectURL(previewObjectUrl.current);
+    },
+    [],
+  );
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || uploading) return;
     const data = new FormData(event.currentTarget);
     const text = (key: string) => String(data.get(key) ?? "").trim();
     switch (module) {
       case "products":
-        onSave({
-          code: text("code"),
-          name: text("name") || null,
-          description: text("description") || null,
-          imagePath: text("imagePath") || null,
-          price: text("price") ? Number(text("price")) : null,
-          manufacturerId: text("manufacturerId") || null,
-          categoryIds: data.getAll("categoryIds").map(String),
-        } satisfies Dto<"CreateProductDto">);
+        setUploadError("");
+        setUploading(true);
+        try {
+          let imagePath = uploadedImagePath;
+          if (!imagePath && imageFile) {
+            imagePath = (await adminService.uploadProductImage(imageFile))
+              .imagePath;
+            setUploadedImagePath(imagePath);
+          }
+          await onSave({
+            code: text("code"),
+            name: text("name") || null,
+            description: text("description") || null,
+            imagePath: imagePath ?? (text("imagePath") || null),
+            price: text("price") ? Number(text("price")) : null,
+            manufacturerId: text("manufacturerId") || null,
+            categoryIds: data.getAll("categoryIds").map(String),
+          } satisfies Dto<"CreateProductDto">);
+        } catch (cause) {
+          setUploadError(
+            cause instanceof Error ? cause.message : "Không thể tải ảnh lên.",
+          );
+        } finally {
+          setUploading(false);
+        }
         break;
       case "categories":
-        onSave({
+        await onSave({
           name: text("name"),
           description: text("description") || null,
         } satisfies Dto<"CreateCategoryDto">);
         break;
       case "manufacturers":
-        onSave({ name: text("name") } satisfies Dto<"CreateManufacturerDto">);
+        await onSave({
+          name: text("name"),
+        } satisfies Dto<"CreateManufacturerDto">);
         break;
       case "contact-requests":
-        onSave({
+        await onSave({
           fullName: text("fullName"),
           email: text("email"),
           phoneNumber: text("phoneNumber"),
@@ -84,7 +127,7 @@ export function AdminEditor({
         } satisfies Dto<"UpdateContactRequestDto">);
         break;
       case "users":
-        onSave({
+        await onSave({
           role: text("role") as Dto<"Role">,
         } satisfies Dto<"UpdateRoleDto">);
         break;
@@ -125,7 +168,10 @@ export function AdminEditor({
             : "Thêm bản ghi"}
       </Typography>
       <form onSubmit={submit} className="mt-5">
-        <fieldset disabled={busy} className="grid min-w-0 gap-5 md:grid-cols-2">
+        <fieldset
+          disabled={busy || uploading}
+          className="grid min-w-0 gap-5 md:grid-cols-2"
+        >
           {(module === "categories" ||
             module === "manufacturers" ||
             module === "products") &&
@@ -148,7 +194,47 @@ export function AdminEditor({
                   defaultValue={value("price")}
                 />
               </Field>
-              {input("imagePath", "Đường dẫn / URL ảnh", false, 2048)}
+              <Field label="Tải ảnh sản phẩm">
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(event) => {
+                    const file = event.currentTarget.files?.[0] ?? null;
+                    if (previewObjectUrl.current) {
+                      URL.revokeObjectURL(previewObjectUrl.current);
+                      previewObjectUrl.current = null;
+                    }
+                    setImageFile(file);
+                    setUploadedImagePath(null);
+                    setUploadError("");
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      previewObjectUrl.current = url;
+                      setImagePreview(url);
+                    } else {
+                      setImagePreview(
+                        record && "imageUrl" in record ? record.imageUrl : null,
+                      );
+                    }
+                  }}
+                />
+                <Typography variant="caption" muted>
+                  JPG, PNG hoặc WebP, tối đa 5 MB. Ảnh chỉ được lưu khi bấm Lưu.
+                </Typography>
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    alt="Xem trước ảnh sản phẩm"
+                    className="aspect-square w-32 rounded-control border border-border object-contain p-2"
+                  />
+                )}
+                {uploadError && (
+                  <Typography role="alert" className="text-danger">
+                    {uploadError}
+                  </Typography>
+                )}
+              </Field>
+              {input("imagePath", "Đường dẫn / URL ảnh có sẵn", false, 2048)}
               <Field label="Hãng sản xuất">
                 <select
                   name="manufacturerId"

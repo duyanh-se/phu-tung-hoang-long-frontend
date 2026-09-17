@@ -14,8 +14,10 @@ async function main() {
     "app",
     "auth/auth",
     "categories/categories",
+    "contact-requests/contact-requests",
     "manufacturers/manufacturers",
     "products/products",
+    "uploads/uploads",
     "users/users",
   ];
   const controllers = files.flatMap((file) =>

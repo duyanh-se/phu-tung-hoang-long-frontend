@@ -249,6 +249,23 @@ export interface paths {
         patch: operations["ProductsController_update"];
         trace?: never;
     };
+    "/api/v1/uploads/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** [ADMIN] Tải ảnh sản phẩm (JPG, PNG hoặc WebP; tối đa 5 MB) */
+        post: operations["UploadsController_uploadProductImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users": {
         parameters: {
             query?: never;
@@ -476,6 +493,15 @@ export interface components {
             name: string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        ProductImageUploadResponseDto: {
+            /** @example /uploads/6f0c9b3e-5e84-4be2-8e59-e05a9bd2a2c9.webp */
+            imagePath: string;
+            /**
+             * Format: uri
+             * @example https://api.ptxmhoanglong.com/uploads/6f0c9b3e-5e84-4be2-8e59-e05a9bd2a2c9.webp
+             */
+            imageUrl: string;
         };
         ProductListResponseDto: {
             data: components["schemas"]["ProductResponseDto"][];
@@ -1986,11 +2012,80 @@ export interface operations {
             };
         };
     };
+    UploadsController_uploadProductImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductImageUploadResponseDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponseDto"];
+                };
+            };
+        };
+    };
     UsersController_list: {
         parameters: {
             query?: {
                 limit?: number;
                 page?: number;
+                role?: components["schemas"]["Role"];
+                /** @description Tìm theo họ tên hoặc email người dùng */
+                search?: string;
             };
             header?: never;
             path?: never;

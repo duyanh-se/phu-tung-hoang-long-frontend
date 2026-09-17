@@ -103,6 +103,41 @@ it("checks current role before allowing CRUD and forwards bearer token", async (
     headers: { Authorization: "Bearer access" },
   });
 });
+it("forwards a product image as multipart data only after checking the admin role", async () => {
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(Response.json(admin))
+    .mockResolvedValueOnce(
+      Response.json({
+        imagePath: "/uploads/new-image.png",
+        imageUrl: "https://api.example/uploads/new-image.png",
+      }),
+    );
+  vi.stubGlobal("fetch", fetcher);
+  const form = new FormData();
+  form.append("file", new Blob(["image"], { type: "image/png" }), "image.png");
+  const request = new NextRequest(
+    "http://localhost:3001/api/admin/uploads/products",
+    {
+      method: "POST",
+      headers: {
+        origin: "http://localhost:3001",
+        cookie: "hl_admin_access=access",
+      },
+      body: form,
+    },
+  );
+
+  expect((await POST(request, context("uploads/products"))).status).toBe(200);
+  expect(fetcher.mock.calls[1][0]).toContain("uploads/products");
+  expect(fetcher.mock.calls[1][1]).toMatchObject({
+    method: "POST",
+    headers: expect.objectContaining({ Authorization: "Bearer access" }),
+  });
+  expect(fetcher.mock.calls[1][1].headers["Content-Type"]).toMatch(
+    /^multipart\/form-data; boundary=/,
+  );
+});
 it("denies a session whose role was downgraded", async () => {
   const fetcher = vi
     .fn()

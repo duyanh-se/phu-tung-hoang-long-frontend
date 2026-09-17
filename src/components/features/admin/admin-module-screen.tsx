@@ -103,7 +103,9 @@ export function AdminModuleScreen({ module }: { module: AdminModule }) {
           busy={state.busy}
           onCancel={() => setEditor(null)}
           onSave={async (input) => {
-            if (await state.save(input, editor.record?.id)) setEditor(null);
+            const saved = await state.save(input, editor.record?.id);
+            if (saved) setEditor(null);
+            return saved;
           }}
         />
       )}
@@ -143,53 +145,155 @@ export function AdminModuleScreen({ module }: { module: AdminModule }) {
           </div>
         </section>
       )}
-      {module !== "users" && (
-        <form
-          className="flex flex-wrap items-end gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const form = new FormData(event.currentTarget);
-            state.filter(
-              String(form.get("search") ?? ""),
-              String(form.get("status") ?? ""),
-            );
-          }}
-        >
-          <label className="grid min-w-0 flex-1 gap-2">
-            <Typography as="span" variant="label">
-              Tìm kiếm
-            </Typography>
-            <Input
-              name="search"
-              placeholder="Nhập từ khóa…"
-              maxLength={200}
-              defaultValue={state.search}
-            />
-          </label>
-          {module === "contact-requests" && (
+      <form
+        key={JSON.stringify(state.filters)}
+        className="flex flex-wrap items-end gap-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          state.filter(
+            Object.fromEntries(
+              Array.from(form.entries()).flatMap(([key, value]) => {
+                const text = String(value).trim();
+                return text ? [[key, text]] : [];
+              }),
+            ),
+          );
+        }}
+      >
+        <label className="grid min-w-0 flex-1 gap-2">
+          <Typography as="span" variant="label">
+            Tìm kiếm
+          </Typography>
+          <Input
+            name="search"
+            placeholder="Nhập từ khóa…"
+            maxLength={200}
+            defaultValue={state.filters.search ?? ""}
+          />
+        </label>
+        {module === "products" && (
+          <>
             <label className="grid gap-2">
               <Typography as="span" variant="label">
-                Lọc trạng thái
+                Hãng sản xuất
               </Typography>
               <select
-                name="status"
+                name="manufacturerId"
                 className={selectClass}
-                defaultValue={state.status}
+                defaultValue={state.filters.manufacturerId ?? ""}
               >
                 <option value="">Tất cả</option>
-                {Object.entries(contactStatuses).map(([key, label]) => (
-                  <option value={key} key={key}>
-                    {label}
+                {state.options.manufacturers.map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {recordValue(item, "name")}
                   </option>
                 ))}
               </select>
             </label>
-          )}
-          <Button type="submit" disabled={state.loading}>
-            Tìm kiếm
-          </Button>
-        </form>
-      )}
+            <label className="grid gap-2">
+              <Typography as="span" variant="label">
+                Danh mục
+              </Typography>
+              <select
+                name="categoryId"
+                className={selectClass}
+                defaultValue={state.filters.categoryId ?? ""}
+              >
+                <option value="">Tất cả</option>
+                {state.options.categories.map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {recordValue(item, "name")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-2">
+              <Typography as="span" variant="label">
+                Giá từ
+              </Typography>
+              <Input
+                name="minPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={state.filters.minPrice ?? ""}
+              />
+            </label>
+            <label className="grid gap-2">
+              <Typography as="span" variant="label">
+                Giá đến
+              </Typography>
+              <Input
+                name="maxPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={state.filters.maxPrice ?? ""}
+              />
+            </label>
+            <label className="grid gap-2">
+              <Typography as="span" variant="label">
+                Sắp xếp
+              </Typography>
+              <select
+                name="sort"
+                className={selectClass}
+                defaultValue={state.filters.sort ?? ""}
+              >
+                <option value="">Mới nhất</option>
+                <option value="price_asc">Giá thấp đến cao</option>
+                <option value="price_desc">Giá cao đến thấp</option>
+              </select>
+            </label>
+          </>
+        )}
+        {module === "contact-requests" && (
+          <label className="grid gap-2">
+            <Typography as="span" variant="label">
+              Lọc trạng thái
+            </Typography>
+            <select
+              name="status"
+              className={selectClass}
+              defaultValue={state.filters.status ?? ""}
+            >
+              <option value="">Tất cả</option>
+              {Object.entries(contactStatuses).map(([key, label]) => (
+                <option value={key} key={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {module === "users" && (
+          <label className="grid gap-2">
+            <Typography as="span" variant="label">
+              Vai trò
+            </Typography>
+            <select
+              name="role"
+              className={selectClass}
+              defaultValue={state.filters.role ?? ""}
+            >
+              <option value="">Tất cả</option>
+              <option value="ADMIN">Quản trị viên</option>
+              <option value="USER">Người dùng</option>
+            </select>
+          </label>
+        )}
+        <Button type="submit" disabled={state.loading}>
+          Lọc
+        </Button>
+        <Button
+          variant="secondary"
+          disabled={state.loading || Object.keys(state.filters).length === 0}
+          onClick={state.clearFilters}
+        >
+          Xóa lọc
+        </Button>
+      </form>
       {state.loading ? (
         <Typography role="status">Đang tải dữ liệu…</Typography>
       ) : (

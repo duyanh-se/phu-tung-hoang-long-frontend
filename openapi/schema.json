@@ -315,96 +315,9 @@
         ]
       }
     },
-    "/api/v1/users/me": {
-      "patch": {
-        "operationId": "UsersController_updateMe",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Cập nhật hồ sơ cá nhân",
-        "tags": [
-          "Users & Authorization"
-        ]
-      }
-    },
-    "/api/v1/users": {
+    "/api/v1/categories": {
       "get": {
-        "operationId": "UsersController_list",
+        "operationId": "CategoriesController_list",
         "parameters": [
           {
             "name": "page",
@@ -427,6 +340,16 @@
               "default": 20,
               "type": "integer"
             }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên danh mục",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -435,7 +358,57 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserListResponseDto"
+                  "$ref": "#/components/schemas/CategoryListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Danh sách danh mục một cấp, có phân trang",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "post": {
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponseDto"
                 }
               }
             }
@@ -486,15 +459,15 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Danh sách người dùng có phân trang",
+        "summary": "[ADMIN] Tạo danh mục",
         "tags": [
-          "Users & Authorization"
+          "Categories"
         ]
       }
     },
-    "/api/v1/users/{id}": {
+    "/api/v1/categories/{id}": {
       "get": {
-        "operationId": "UsersController_findOne",
+        "operationId": "CategoriesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -511,32 +484,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/CategoryResponseDto"
                 }
               }
             }
           },
           "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
             "description": "",
             "content": {
               "application/json": {
@@ -567,20 +520,13 @@
             }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[ADMIN] Xem người dùng theo ID",
+        "summary": "Chi tiết danh mục",
         "tags": [
-          "Users & Authorization"
+          "Categories"
         ]
-      }
-    },
-    "/api/v1/users/{id}/role": {
+      },
       "patch": {
-        "operationId": "UsersController_updateRole",
+        "operationId": "CategoriesController_update",
         "parameters": [
           {
             "name": "id",
@@ -596,7 +542,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateRoleDto"
+                "$ref": "#/components/schemas/UpdateCategoryDto"
               }
             }
           }
@@ -607,7 +553,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/CategoryResponseDto"
                 }
               }
             }
@@ -668,9 +614,917 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Đổi vai trò người dùng (không cho đổi vai trò của chính mình)",
+        "summary": "[ADMIN] Cập nhật danh mục",
         "tags": [
-          "Users & Authorization"
+          "Categories"
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Xóa danh mục rỗng; chặn nếu còn liên kết sản phẩm",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/api/v1/contact-requests": {
+      "post": {
+        "operationId": "ContactRequestsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContactRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactRequestResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gửi yêu cầu liên hệ, không cần đăng nhập; trạng thái ban đầu NEW",
+        "tags": [
+          "Contact requests"
+        ]
+      },
+      "get": {
+        "operationId": "ContactRequestsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo họ tên, email hoặc số điện thoại đã chuẩn hóa",
+            "schema": {
+              "maxLength": 254,
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ContactRequestStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactRequestListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Danh sách yêu cầu liên hệ, tìm kiếm và lọc trạng thái",
+        "tags": [
+          "Contact requests"
+        ]
+      }
+    },
+    "/api/v1/contact-requests/{id}": {
+      "get": {
+        "operationId": "ContactRequestsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactRequestResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Chi tiết yêu cầu liên hệ",
+        "tags": [
+          "Contact requests"
+        ]
+      },
+      "patch": {
+        "operationId": "ContactRequestsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContactRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactRequestResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Sửa thông tin hoặc trạng thái yêu cầu liên hệ",
+        "tags": [
+          "Contact requests"
+        ]
+      },
+      "delete": {
+        "operationId": "ContactRequestsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteContactRequestResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Xóa vĩnh viễn yêu cầu liên hệ",
+        "tags": [
+          "Contact requests"
+        ]
+      }
+    },
+    "/api/v1/manufacturers": {
+      "get": {
+        "operationId": "ManufacturersController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000000,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên hãng",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturerListResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Danh sách hãng sản xuất, phân trang và tìm theo tên",
+        "tags": [
+          "Manufacturers"
+        ]
+      },
+      "post": {
+        "operationId": "ManufacturersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateManufacturerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturerResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Tạo hãng sản xuất",
+        "tags": [
+          "Manufacturers"
+        ]
+      }
+    },
+    "/api/v1/manufacturers/{id}": {
+      "get": {
+        "operationId": "ManufacturersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturerResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Chi tiết hãng sản xuất",
+        "tags": [
+          "Manufacturers"
+        ]
+      },
+      "patch": {
+        "operationId": "ManufacturersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateManufacturerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturerResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Cập nhật tên hãng sản xuất",
+        "tags": [
+          "Manufacturers"
+        ]
+      },
+      "delete": {
+        "operationId": "ManufacturersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteManufacturerResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Xóa hãng; chặn khi còn sản phẩm, kể cả đã xóa mềm",
+        "tags": [
+          "Manufacturers"
         ]
       }
     },
@@ -1138,89 +1992,25 @@
         ]
       }
     },
-    "/api/v1/categories": {
-      "get": {
-        "operationId": "CategoriesController_list",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 1000000,
-              "default": 1,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "description": "Tìm theo tên danh mục",
-            "schema": {
-              "maxLength": 200,
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryListResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Danh sách danh mục một cấp, có phân trang",
-        "tags": [
-          "Categories"
-        ]
-      },
+    "/api/v1/uploads/products": {
       "post": {
-        "operationId": "CategoriesController_create",
+        "operationId": "UploadsController_uploadProductImage",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCategoryDto"
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
               }
             }
           }
@@ -1231,7 +2021,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CategoryResponseDto"
+                  "$ref": "#/components/schemas/ProductImageUploadResponseDto"
                 }
               }
             }
@@ -1266,6 +2056,16 @@
               }
             }
           },
+          "413": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "429": {
             "description": "",
             "content": {
@@ -1282,90 +2082,22 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Tạo danh mục",
+        "summary": "[ADMIN] Tải ảnh sản phẩm (JPG, PNG hoặc WebP; tối đa 5 MB)",
         "tags": [
-          "Categories"
+          "Uploads"
         ]
       }
     },
-    "/api/v1/categories/{id}": {
-      "get": {
-        "operationId": "CategoriesController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoryResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Chi tiết danh mục",
-        "tags": [
-          "Categories"
-        ]
-      },
+    "/api/v1/users/me": {
       "patch": {
-        "operationId": "CategoriesController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "UsersController_updateMe",
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCategoryDto"
+                "$ref": "#/components/schemas/UpdateProfileDto"
               }
             }
           }
@@ -1376,7 +2108,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CategoryResponseDto"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             }
@@ -1437,102 +2169,15 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Cập nhật danh mục",
+        "summary": "Cập nhật hồ sơ cá nhân",
         "tags": [
-          "Categories"
-        ]
-      },
-      "delete": {
-        "operationId": "CategoriesController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[ADMIN] Xóa danh mục rỗng; chặn nếu còn liên kết sản phẩm",
-        "tags": [
-          "Categories"
+          "Users & Authorization"
         ]
       }
     },
-    "/api/v1/manufacturers": {
+    "/api/v1/users": {
       "get": {
-        "operationId": "ManufacturersController_list",
+        "operationId": "UsersController_list",
         "parameters": [
           {
             "name": "page",
@@ -1560,467 +2205,18 @@
             "name": "search",
             "required": false,
             "in": "query",
-            "description": "Tìm theo tên hãng",
-            "schema": {
-              "maxLength": 200,
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturerListResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Danh sách hãng sản xuất, phân trang và tìm theo tên",
-        "tags": [
-          "Manufacturers"
-        ]
-      },
-      "post": {
-        "operationId": "ManufacturersController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateManufacturerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturerResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[ADMIN] Tạo hãng sản xuất",
-        "tags": [
-          "Manufacturers"
-        ]
-      }
-    },
-    "/api/v1/manufacturers/{id}": {
-      "get": {
-        "operationId": "ManufacturersController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturerResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Chi tiết hãng sản xuất",
-        "tags": [
-          "Manufacturers"
-        ]
-      },
-      "patch": {
-        "operationId": "ManufacturersController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateManufacturerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturerResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[ADMIN] Cập nhật tên hãng sản xuất",
-        "tags": [
-          "Manufacturers"
-        ]
-      },
-      "delete": {
-        "operationId": "ManufacturersController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteManufacturerResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[ADMIN] Xóa hãng; chặn khi còn sản phẩm, kể cả đã xóa mềm",
-        "tags": [
-          "Manufacturers"
-        ]
-      }
-    },
-    "/api/v1/contact-requests": {
-      "post": {
-        "operationId": "ContactRequestsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateContactRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactRequestResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Gửi yêu cầu liên hệ, không cần đăng nhập; trạng thái ban đầu NEW",
-        "tags": [
-          "Contact requests"
-        ]
-      },
-      "get": {
-        "operationId": "ContactRequestsController_list",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 1000000,
-              "default": 1,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "description": "Tìm theo họ tên, email hoặc số điện thoại đã chuẩn hóa",
+            "description": "Tìm theo họ tên hoặc email người dùng",
             "schema": {
               "maxLength": 254,
               "type": "string"
             }
           },
           {
-            "name": "status",
+            "name": "role",
             "required": false,
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ContactRequestStatus"
+              "$ref": "#/components/schemas/Role"
             }
           }
         ],
@@ -2030,7 +2226,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ContactRequestListResponseDto"
+                  "$ref": "#/components/schemas/UserListResponseDto"
                 }
               }
             }
@@ -2081,15 +2277,15 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Danh sách yêu cầu liên hệ, tìm kiếm và lọc trạng thái",
+        "summary": "[ADMIN] Danh sách người dùng có phân trang",
         "tags": [
-          "Contact requests"
+          "Users & Authorization"
         ]
       }
     },
-    "/api/v1/contact-requests/{id}": {
+    "/api/v1/users/{id}": {
       "get": {
-        "operationId": "ContactRequestsController_findOne",
+        "operationId": "UsersController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2106,7 +2302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ContactRequestResponseDto"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             }
@@ -2167,13 +2363,15 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Chi tiết yêu cầu liên hệ",
+        "summary": "[ADMIN] Xem người dùng theo ID",
         "tags": [
-          "Contact requests"
+          "Users & Authorization"
         ]
-      },
+      }
+    },
+    "/api/v1/users/{id}/role": {
       "patch": {
-        "operationId": "ContactRequestsController_update",
+        "operationId": "UsersController_updateRole",
         "parameters": [
           {
             "name": "id",
@@ -2189,7 +2387,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateContactRequestDto"
+                "$ref": "#/components/schemas/UpdateRoleDto"
               }
             }
           }
@@ -2200,7 +2398,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ContactRequestResponseDto"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             }
@@ -2261,100 +2459,16 @@
             "bearer": []
           }
         ],
-        "summary": "[ADMIN] Sửa thông tin hoặc trạng thái yêu cầu liên hệ",
+        "summary": "[ADMIN] Đổi vai trò người dùng (không cho đổi vai trò của chính mình)",
         "tags": [
-          "Contact requests"
-        ]
-      },
-      "delete": {
-        "operationId": "ContactRequestsController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteContactRequestResponseDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "[ADMIN] Xóa vĩnh viễn yêu cầu liên hệ",
-        "tags": [
-          "Contact requests"
+          "Users & Authorization"
         ]
       }
     }
   },
   "info": {
     "title": "Phụ Tùng Hoàng Long API",
-    "description": "Authentication với JWT, refresh token rotation và phân quyền USER/ADMIN.",
+    "description": "",
     "version": "1.0.0",
     "contact": {}
   },
@@ -2552,78 +2666,6 @@
           "refreshToken"
         ]
       },
-      "UpdateProfileDto": {
-        "type": "object",
-        "properties": {
-          "fullName": {
-            "type": "string",
-            "example": "Nguyễn Văn An",
-            "minLength": 2,
-            "maxLength": 100
-          }
-        }
-      },
-      "UserListResponseDto": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponseDto"
-            }
-          },
-          "total": {
-            "type": "number"
-          },
-          "page": {
-            "type": "number"
-          },
-          "limit": {
-            "type": "number"
-          },
-          "totalPages": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "data",
-          "total",
-          "page",
-          "limit",
-          "totalPages"
-        ]
-      },
-      "UpdateRoleDto": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Role"
-              }
-            ]
-          }
-        },
-        "required": [
-          "role"
-        ]
-      },
-      "ProductManufacturerDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
-      },
       "CategoryResponseDto": {
         "type": "object",
         "properties": {
@@ -2654,6 +2696,356 @@
           "description",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "CategoryListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryResponseDto"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Phụ tùng động cơ",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Phụ tùng động cơ",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          }
+        }
+      },
+      "CreateContactRequestDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn An",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "example": "guest@example.com",
+            "format": "email",
+            "maxLength": 254
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "0901234567",
+            "maxLength": 16,
+            "pattern": "^\\+?[0-9]{7,15}$",
+            "description": "Chuỗi 7–15 chữ số, có thể bắt đầu bằng +. Bỏ khoảng trắng, dấu chấm, gạch ngang và ngoặc trước khi lưu; giữ số 0 đầu."
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "Tư vấn sản phẩm",
+            "description": "Lý do do frontend gửi lên; bỏ qua, null hoặc chuỗi trắng được lưu null."
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "phoneNumber"
+        ]
+      },
+      "ContactRequestStatus": {
+        "type": "string",
+        "enum": [
+          "NEW",
+          "IN_PROGRESS",
+          "RESOLVED"
+        ]
+      },
+      "ContactRequestResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn An"
+          },
+          "email": {
+            "type": "string",
+            "example": "guest@example.com",
+            "format": "email"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "0901234567"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactRequestStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "email",
+          "phoneNumber",
+          "reason",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ContactRequestListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactRequestResponseDto"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ]
+      },
+      "UpdateContactRequestDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn An",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "example": "guest@example.com",
+            "format": "email",
+            "maxLength": 254
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "0901234567",
+            "maxLength": 16,
+            "pattern": "^\\+?[0-9]{7,15}$",
+            "description": "Chuỗi 7–15 chữ số, có thể bắt đầu bằng +. Bỏ khoảng trắng, dấu chấm, gạch ngang và ngoặc trước khi lưu; giữ số 0 đầu."
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200,
+            "example": "Tư vấn sản phẩm",
+            "description": "Lý do do frontend gửi lên; bỏ qua, null hoặc chuỗi trắng được lưu null."
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactRequestStatus"
+              }
+            ]
+          }
+        }
+      },
+      "DeleteContactRequestResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "delete success"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ManufacturerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Honda"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ManufacturerListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturerResponseDto"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ]
+      },
+      "CreateManufacturerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Honda",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateManufacturerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Honda",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "DeleteManufacturerResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "delete success"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ProductManufacturerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
         ]
       },
       "ProductResponseDto": {
@@ -2891,280 +3283,55 @@
           "message"
         ]
       },
-      "CategoryListResponseDto": {
+      "ProductImageUploadResponseDto": {
         "type": "object",
         "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CategoryResponseDto"
-            }
+          "imagePath": {
+            "type": "string",
+            "example": "/uploads/6f0c9b3e-5e84-4be2-8e59-e05a9bd2a2c9.webp"
           },
-          "total": {
-            "type": "integer"
-          },
-          "page": {
-            "type": "integer"
-          },
-          "limit": {
-            "type": "integer"
-          },
-          "totalPages": {
-            "type": "integer"
+          "imageUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://api.ptxmhoanglong.com/uploads/6f0c9b3e-5e84-4be2-8e59-e05a9bd2a2c9.webp"
           }
         },
         "required": [
-          "data",
-          "total",
-          "page",
-          "limit",
-          "totalPages"
+          "imagePath",
+          "imageUrl"
         ]
       },
-      "CreateCategoryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Phụ tùng động cơ",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "description": {
-            "type": "string",
-            "nullable": true,
-            "maxLength": 5000
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "UpdateCategoryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Phụ tùng động cơ",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "description": {
-            "type": "string",
-            "nullable": true,
-            "maxLength": 5000
-          }
-        }
-      },
-      "ManufacturerResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "example": "Honda"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "ManufacturerListResponseDto": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ManufacturerResponseDto"
-            }
-          },
-          "total": {
-            "type": "integer"
-          },
-          "page": {
-            "type": "integer"
-          },
-          "limit": {
-            "type": "integer"
-          },
-          "totalPages": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "data",
-          "total",
-          "page",
-          "limit",
-          "totalPages"
-        ]
-      },
-      "CreateManufacturerDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Honda",
-            "minLength": 1,
-            "maxLength": 200
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "UpdateManufacturerDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Honda",
-            "minLength": 1,
-            "maxLength": 200
-          }
-        }
-      },
-      "DeleteManufacturerResponseDto": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "example": "delete success"
-          }
-        },
-        "required": [
-          "message"
-        ]
-      },
-      "CreateContactRequestDto": {
+      "UpdateProfileDto": {
         "type": "object",
         "properties": {
           "fullName": {
             "type": "string",
             "example": "Nguyễn Văn An",
-            "minLength": 1,
+            "minLength": 2,
             "maxLength": 100
-          },
-          "email": {
-            "type": "string",
-            "example": "guest@example.com",
-            "format": "email",
-            "maxLength": 254
-          },
-          "phoneNumber": {
-            "type": "string",
-            "example": "0901234567",
-            "maxLength": 16,
-            "pattern": "^\\+?[0-9]{7,15}$",
-            "description": "Chuỗi 7–15 chữ số, có thể bắt đầu bằng +. Bỏ khoảng trắng, dấu chấm, gạch ngang và ngoặc trước khi lưu; giữ số 0 đầu."
-          },
-          "reason": {
-            "type": "string",
-            "nullable": true,
-            "maxLength": 200,
-            "example": "Tư vấn sản phẩm",
-            "description": "Lý do do frontend gửi lên; bỏ qua, null hoặc chuỗi trắng được lưu null."
           }
-        },
-        "required": [
-          "fullName",
-          "email",
-          "phoneNumber"
-        ]
+        }
       },
-      "ContactRequestStatus": {
-        "type": "string",
-        "enum": [
-          "NEW",
-          "IN_PROGRESS",
-          "RESOLVED"
-        ]
-      },
-      "ContactRequestResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "fullName": {
-            "type": "string",
-            "example": "Nguyễn Văn An"
-          },
-          "email": {
-            "type": "string",
-            "example": "guest@example.com",
-            "format": "email"
-          },
-          "phoneNumber": {
-            "type": "string",
-            "example": "0901234567"
-          },
-          "reason": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ContactRequestStatus"
-              }
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "fullName",
-          "email",
-          "phoneNumber",
-          "reason",
-          "status",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "ContactRequestListResponseDto": {
+      "UserListResponseDto": {
         "type": "object",
         "properties": {
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContactRequestResponseDto"
+              "$ref": "#/components/schemas/UserResponseDto"
             }
           },
           "total": {
-            "type": "integer"
+            "type": "number"
           },
           "page": {
-            "type": "integer"
+            "type": "number"
           },
           "limit": {
-            "type": "integer"
+            "type": "number"
           },
           "totalPages": {
-            "type": "integer"
+            "type": "number"
           }
         },
         "required": [
@@ -3175,56 +3342,22 @@
           "totalPages"
         ]
       },
-      "UpdateContactRequestDto": {
+      "UpdateRoleDto": {
         "type": "object",
         "properties": {
-          "fullName": {
-            "type": "string",
-            "example": "Nguyễn Văn An",
-            "minLength": 1,
-            "maxLength": 100
-          },
-          "email": {
-            "type": "string",
-            "example": "guest@example.com",
-            "format": "email",
-            "maxLength": 254
-          },
-          "phoneNumber": {
-            "type": "string",
-            "example": "0901234567",
-            "maxLength": 16,
-            "pattern": "^\\+?[0-9]{7,15}$",
-            "description": "Chuỗi 7–15 chữ số, có thể bắt đầu bằng +. Bỏ khoảng trắng, dấu chấm, gạch ngang và ngoặc trước khi lưu; giữ số 0 đầu."
-          },
-          "reason": {
-            "type": "string",
-            "nullable": true,
-            "maxLength": 200,
-            "example": "Tư vấn sản phẩm",
-            "description": "Lý do do frontend gửi lên; bỏ qua, null hoặc chuỗi trắng được lưu null."
-          },
-          "status": {
+          "role": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ContactRequestStatus"
+                "$ref": "#/components/schemas/Role"
               }
             ]
           }
-        }
-      },
-      "DeleteContactRequestResponseDto": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "example": "delete success"
-          }
         },
         "required": [
-          "message"
+          "role"
         ]
       }
     }
-  }
+  },
+  "x-schema-source": "Offline snapshot from local backend dist; refresh with npm run api:generate when backend is available."
 }

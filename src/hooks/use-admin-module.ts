@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   adminService,
   type AdminInput,
+  type AdminFilters,
   type AdminList,
   type AdminModule,
   type AdminRecord,
@@ -13,8 +14,7 @@ import { useAdminSession } from "./use-admin-session";
 export function useAdminModule(module: AdminModule) {
   const { expire } = useAdminSession();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [filters, setFilters] = useState<AdminFilters>({});
   const [revision, setRevision] = useState(0);
   const [result, setResult] = useState<AdminList | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,8 +39,7 @@ export function useAdminModule(module: AdminModule) {
           {
             page,
             limit: 10,
-            ...(search && module !== "users" ? { search } : {}),
-            ...(status ? { status } : {}),
+            ...filters,
           },
           controller.signal,
         );
@@ -56,7 +55,7 @@ export function useAdminModule(module: AdminModule) {
       }
     });
     return () => controller.abort();
-  }, [module, page, search, status, revision, expire]);
+  }, [module, page, filters, revision, expire]);
   useEffect(() => {
     if (module !== "products") return;
     let active = true;
@@ -130,12 +129,14 @@ export function useAdminModule(module: AdminModule) {
     optionsReady,
     page,
     setPage,
-    search,
-    status,
-    filter: (text: string, state: string) => {
+    filters,
+    filter: (nextFilters: AdminFilters) => {
       setPage(1);
-      setSearch(text.trim());
-      setStatus(state);
+      setFilters(nextFilters);
+    },
+    clearFilters: () => {
+      setPage(1);
+      setFilters({});
     },
     reload: () => setRevision((v) => v + 1),
     save,

@@ -54,6 +54,7 @@ export type AdminInput =
   | Dto<"CreateContactRequestDto">
   | Dto<"UpdateContactRequestDto">
   | Dto<"UpdateRoleDto">;
+export type AdminFilters = Record<string, string | number>;
 
 export const adminService = {
   login: (data: Dto<"LoginDto">) =>
@@ -64,11 +65,8 @@ export const adminService = {
     }),
   me: () => request<Dto<"UserResponseDto">>({ url: "/auth/me" }),
   logout: () => request<void>({ method: "POST", url: "/auth/logout" }),
-  list: (
-    module: AdminModule,
-    params: Record<string, string | number>,
-    signal?: AbortSignal,
-  ) => request<AdminList>({ url: `/${module}`, params, signal }),
+  list: (module: AdminModule, params: AdminFilters, signal?: AbortSignal) =>
+    request<AdminList>({ url: `/${module}`, params, signal }),
   get: (module: AdminModule, id: string) =>
     request<AdminRecord>({ url: `/${module}/${encodeURIComponent(id)}` }),
   save: (module: AdminModule, data: AdminInput, id?: string) =>
@@ -82,6 +80,15 @@ export const adminService = {
       method: "DELETE",
       url: `/${module}/${encodeURIComponent(id)}`,
     }),
+  uploadProductImage: (file: File) => {
+    const data = new FormData();
+    data.append("file", file);
+    return request<Dto<"ProductImageUploadResponseDto">>({
+      method: "POST",
+      url: "/uploads/products",
+      data,
+    });
+  },
   async options(module: "categories" | "manufacturers") {
     const records: AdminRecord[] = [];
     let page = 1;
