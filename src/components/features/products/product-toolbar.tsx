@@ -22,15 +22,19 @@ export function ProductToolbar({
     onSearch(value.trim());
   }
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
-      <form onSubmit={submit} role="search" className="w-full max-w-xl">
+    <div className="flex flex-wrap items-end justify-between gap-5 rounded-card border border-border bg-surface p-5 sm:p-6">
+      <form
+        onSubmit={submit}
+        role="search"
+        className="w-full min-w-0 xl:flex-1"
+      >
         <label
           htmlFor="product-search"
           className={cn("mb-2 block", typographyVariants.label)}
         >
           Tìm theo tên hoặc mã phụ tùng
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             id="product-search"
             type="search"

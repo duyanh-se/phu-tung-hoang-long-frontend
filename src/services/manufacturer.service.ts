@@ -4,6 +4,24 @@ import { endpoints } from "@/api/endpoints";
 import type { ManufacturerDto, ManufacturerListDto } from "@/types/api";
 
 export const manufacturerService = {
+  async listAll(signal?: AbortSignal): Promise<ManufacturerDto[]> {
+    const items: ManufacturerDto[] = [];
+    let page = 1;
+    while (true) {
+      const { data } = await api.get<ManufacturerListDto>(
+        endpoints.manufacturers,
+        {
+          params: { page, limit: 100 },
+          signal,
+        },
+      );
+      items.push(...data.data);
+      if (page >= data.totalPages) break;
+      page++;
+      signal?.throwIfAborted();
+    }
+    return items.sort((a, b) => a.name.localeCompare(b.name, "vi"));
+  },
   async findByName(
     name: string,
     signal?: AbortSignal,

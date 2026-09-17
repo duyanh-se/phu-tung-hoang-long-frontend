@@ -1703,9 +1703,14 @@ export interface operations {
                 categoryId?: string;
                 limit?: number;
                 manufacturerId?: string;
+                /** @description Giá tối đa (VNĐ), bao gồm biên */
+                maxPrice?: number;
+                /** @description Giá tối thiểu (VNĐ), bao gồm biên */
+                minPrice?: number;
                 page?: number;
                 /** @description Tìm theo mã hoặc tên sản phẩm */
                 search?: string;
+                sort?: "newest" | "price_asc" | "price_desc";
             };
             header?: never;
             path?: never;

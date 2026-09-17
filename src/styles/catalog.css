@@ -1,0 +1,23 @@
+@layer components {
+  .catalog-page {
+    background: var(--color-brand-50);
+  }
+  .catalog-product-media > div {
+    background: linear-gradient(
+      135deg,
+      var(--color-brand-50),
+      var(--color-background)
+    );
+  }
+  @media (min-width: 640px) {
+    .catalog-product-list .catalog-product-media {
+      width: 15rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .catalog-product-card:hover,
+    .catalog-product-card:hover .product-card-code {
+      transform: none;
+    }
+  }
+}

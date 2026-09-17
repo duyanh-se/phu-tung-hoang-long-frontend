@@ -16,7 +16,16 @@ export function useProducts(
   query: ProductQuery = {},
   manufacturerName?: string,
 ) {
-  const { page = 1, limit = 12, search, categoryId, manufacturerId } = query;
+  const {
+    page = 1,
+    limit = 12,
+    search,
+    categoryId,
+    manufacturerId,
+    sort,
+    minPrice,
+    maxPrice,
+  } = query;
   const [revision, setRevision] = useState(0);
   const key = JSON.stringify([
     page,
@@ -26,6 +35,9 @@ export function useProducts(
     manufacturerId,
     manufacturerName,
     revision,
+    sort,
+    minPrice,
+    maxPrice,
   ]);
   const [result, setResult] = useState<Result>({
     key,
@@ -43,7 +55,16 @@ export function useProducts(
       setResult({ key, data: null, error: null, isLoading: true });
       try {
         const data = await catalogService.list(
-          { page, limit, search, categoryId, manufacturerId },
+          {
+            page,
+            limit,
+            search,
+            categoryId,
+            manufacturerId,
+            sort,
+            minPrice,
+            maxPrice,
+          },
           manufacturerName,
           controller.signal,
         );
@@ -69,6 +90,9 @@ export function useProducts(
     manufacturerName,
     revision,
     key,
+    sort,
+    minPrice,
+    maxPrice,
   ]);
 
   return {

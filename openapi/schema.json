@@ -728,6 +728,42 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "newest",
+              "type": "string",
+              "enum": [
+                "newest",
+                "price_asc",
+                "price_desc"
+              ]
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Giá tối thiểu (VNĐ), bao gồm biên",
+            "schema": {
+              "minimum": 0,
+              "maximum": 999999999999.99,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Giá tối đa (VNĐ), bao gồm biên",
+            "schema": {
+              "minimum": 0,
+              "maximum": 999999999999.99,
+              "type": "number"
+            }
           }
         ],
         "responses": {
