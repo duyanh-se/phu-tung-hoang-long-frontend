@@ -43,7 +43,17 @@ export function SiteFooter() {
               <Typography as="h2" variant="title">
                 Theo dõi chúng tôi
               </Typography>
-              <Typography muted>Facebook · TikTok</Typography>
+
+              <Typography muted>
+                <a
+                  href="https://www.facebook.com/ptxmhoanglong"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="motion-interaction rounded-control hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700"
+                >
+                  Facebook
+                </a>
+              </Typography>
             </div>
             <div className="space-y-2">
               <Typography variant="label">
