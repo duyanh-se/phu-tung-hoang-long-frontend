@@ -13,6 +13,14 @@ const cookieOptions = {
 const fail = (message: string, status: number) =>
   NextResponse.json({ message }, { status });
 
+function hasSameOrigin(request: NextRequest) {
+  const protocol =
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ??
+    request.nextUrl.protocol.replace(/:$/, "");
+  const host = request.headers.get("host") ?? request.nextUrl.host;
+  return request.headers.get("origin") === `${protocol}://${host}`;
+}
+
 function clearSession(response: NextResponse) {
   for (const name of [accessCookie, refreshCookie])
     response.cookies.set(name, "", { ...cookieOptions, maxAge: 0 });
@@ -26,10 +34,7 @@ async function handle(
   const { path } = await context.params;
   const route = path.join("/");
   const method = request.method;
-  if (
-    method !== "GET" &&
-    request.headers.get("origin") !== request.nextUrl.origin
-  )
+  if (method !== "GET" && !hasSameOrigin(request))
     return fail("Nguồn yêu cầu không hợp lệ.", 403);
   if (!["login", "register", "refresh", "logout", "me"].includes(route))
     return fail("Không tìm thấy API.", 404);
