@@ -17,7 +17,7 @@ export function SiteFooter() {
       className={
         isHome
           ? "site-footer site-footer-home relative mt-auto"
-          : "site-footer mt-auto pt-10 sm:pt-16"
+          : "site-footer mt-auto bg-foreground"
       }
     >
       {isHome && <ContactSection />}
@@ -32,7 +32,7 @@ export function SiteFooter() {
           <div className="space-y-8">
             <Link
               href="/"
-              className="motion-interaction inline-flex items-center gap-3 rounded-control text-foreground hover:text-brand-700"
+              className="motion-interaction inline-flex items-center gap-3 rounded-control text-surface hover:text-brand-100"
             >
               <BrandLogo size="small" decorative />
               <Typography as="span" variant="label">
@@ -44,12 +44,12 @@ export function SiteFooter() {
                 Theo dõi chúng tôi
               </Typography>
 
-              <Typography muted>
+              <Typography className="text-inverse-muted">
                 <a
                   href="https://www.facebook.com/ptxmhoanglong"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="motion-interaction rounded-control hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700"
+                  className="motion-interaction rounded-control hover:text-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-surface"
                 >
                   Facebook
                 </a>
@@ -59,7 +59,7 @@ export function SiteFooter() {
               <Typography variant="label">
                 © 2026 {siteConfig.name}. Bản quyền được bảo hộ.
               </Typography>
-              <Typography variant="caption" className="text-muted">
+              <Typography variant="caption" className="text-inverse-muted">
                 Điều khoản · Quyền riêng tư · Cài đặt cookie
               </Typography>
             </div>

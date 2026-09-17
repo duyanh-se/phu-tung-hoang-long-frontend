@@ -21,13 +21,9 @@ export function LandingHeaderPin() {
         if (!context.conditions?.stack || context.conditions?.reduced) return;
 
         ScrollTrigger.create({
-          trigger: header,
+          trigger: story,
           start: "top top",
-          endTrigger: story,
-          end: "top top",
-          pin: true,
-          pinSpacing: false,
-          anticipatePin: 1,
+          end: "bottom top",
           invalidateOnRefresh: true,
           onToggle: ({ isActive }) =>
             header.toggleAttribute("data-home-pinned", isActive),
